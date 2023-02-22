@@ -2,11 +2,14 @@ import { useState } from 'react';
 import reactLogo from './assets/react.svg';
 import './App.css';
 
-function App() {
-  const [count, setCount] = useState(0);
+import { useProjects } from './domains';
 
-  return <div className="App"></div>;
+function App() {
+  const { projects } = useProjects();
+
+  console.log(projects);
+
+  return <div className="App">{import.meta.env.VITE_TOKEN}</div>;
 }
 
 export default App;
-

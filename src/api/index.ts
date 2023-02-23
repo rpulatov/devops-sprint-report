@@ -1,9 +1,6 @@
-import * as azapi from 'azure-devops-extension-api';
-import * as SDK from 'azure-devops-extension-sdk';
-import { CoreRestClient, WebApiTeam } from 'azure-devops-extension-api/Core';
-azapi.getClient(CoreRestClient);
-
 const PAT = import.meta.env.VITE_PAT;
+
+console.log({ PAT });
 const TOKEN = btoa(`${PAT}:${PAT}`);
 const API_URL = 'https://dev.azure.com';
 const ORG_NAME = 'solution-factory';
@@ -27,10 +24,10 @@ export function fetchAzure(
   const teamId = options?.teamId ? options.teamId + '/' : '';
 
   return fetch(
-    `${API_URL}/${ORG_NAME}/${projectId}${teamId}/_apis${url}?${params.toString()}`,
+    `${API_URL}/${ORG_NAME}/${projectId}${teamId}_apis${url}?${params.toString()}`,
     {
       method: 'GET',
       headers: new Headers({ Authorization: `Basic ${TOKEN}` }),
     }
-  );
+  ).then((res) => res.json());
 }

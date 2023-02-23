@@ -1,11 +1,10 @@
-import { TeamProjectReference } from 'azure-devops-node-api/interfaces/CoreInterfaces';
 import React from 'react';
-import { client } from '../api';
-
+import { fetchAzure } from '../api';
+import { TeamProjectReference } from 'azure-devops-extension-api/Core';
 async function getProjects() {
-  await client.connect();
-  const coreApi = await client.getCoreApi();
-  return await coreApi.getProjects();
+  return fetchAzure('/projects').then(
+    (res: { count: number; value: TeamProjectReference[] }) => res.value
+  );
 }
 
 export function useProjects() {

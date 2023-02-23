@@ -9,7 +9,7 @@ function App() {
 
   console.log(projects);
 
-  return <div className="App">{import.meta.env.VITE_TOKEN}</div>;
+  return <div className="App">{projects.map(item => <div>{item.name}</div>)}</div>;
 }
 
 export default App;

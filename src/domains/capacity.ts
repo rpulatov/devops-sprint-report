@@ -2,21 +2,36 @@ import React from 'react';
 import { fetchAzure } from '../api';
 import { TeamMemberCapacity } from 'azure-devops-extension-api/Work';
 
-type GetIterationsParams = { projectId: string };
-async function getIterations({ projectId }: GetIterationsParams) {
-  return fetchAzure('/work/teamsettings/iterations', { projectId }).then(
-    (res: { count: number; value: TeamMemberCapacity[] }) => res.value
-  );
+type GetCapacityParams = {
+  projectId: string;
+  teamId: string;
+  iterationId: string;
+};
+async function getCapacity({
+  projectId,
+  teamId,
+  iterationId,
+}: GetCapacityParams) {
+  return fetchAzure(`/work/teamsettings/iterations/${iterationId}/capacities`, {
+    projectId,
+    teamId,
+  }).then((res: { teamMembers: TeamMemberCapacity[] }) => res.teamMembers);
 }
 
-export function useIterations({ projectId }: GetIterationsParams) {
-  const [iterations, setIterations] = React.useState<TeamMemberCapacity[]>(
+export function useCapacity({
+  projectId,
+  teamId,
+  iterationId,
+}: GetCapacityParams) {
+  const [teamMembers, setTeamMembers] = React.useState<TeamMemberCapacity[]>(
     []
   );
   React.useEffect(() => {
-    getIterations({ projectId }).then((res) => setIterations(res));
+    getCapacity({ projectId, teamId, iterationId }).then((res) =>
+      setTeamMembers(res)
+    );
   }, [projectId]);
   return {
-    iterations,
+    teamMembers,
   };
 }

@@ -5,8 +5,6 @@ import { Card } from 'azure-devops-ui/Card';
 
 import './App.css';
 
-import { useProjects } from './domains';
-import { IListBoxItem } from 'azure-devops-ui/ListBox';
 import { SelectProject } from './components/SelectProject';
 import {
   TeamProjectReference,
@@ -15,6 +13,7 @@ import {
 import { SelectIteration } from './components/SelectIteration';
 import { TeamSettingsIteration } from 'azure-devops-extension-api/Work';
 import { SelectTeam } from './components/SelectTeams';
+import { DataLayer } from './components/DataLayer';
 
 function App() {
   const [currentProject, setCurrentProject] =
@@ -60,6 +59,13 @@ function App() {
             : ''}
         </span>
       </p>
+      {currentProject && currentTeam && currentIteration ? (
+        <DataLayer
+          projectId={currentProject.id}
+          teamId={currentTeam.id}
+          iterationId={currentIteration.id}
+        />
+      ) : null}
     </Page>
   );
 }

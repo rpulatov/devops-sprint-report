@@ -63,7 +63,7 @@ function App() {
         <DataLayer
           projectId={currentProject.id}
           teamId={currentTeam.id}
-          iterationId={currentIteration.id}
+          iteration={currentIteration}
         />
       ) : null}
     </Page>

@@ -1,6 +1,10 @@
 import React from 'react';
 import { fetchAzure } from '../api';
-import { TeamMemberCapacity } from 'azure-devops-extension-api/Work';
+import {
+  DateRange,
+  TeamMemberCapacity,
+  TeamSettingsDaysOff,
+} from 'azure-devops-extension-api/Work';
 
 type GetCapacityParams = {
   projectId: string;
@@ -18,6 +22,20 @@ async function getCapacity({
   }).then((res: { teamMembers: TeamMemberCapacity[] }) => res.teamMembers);
 }
 
+async function getTeamDaysOff({
+  projectId,
+  teamId,
+  iterationId,
+}: GetCapacityParams) {
+  return fetchAzure(
+    `/work/teamsettings/iterations/${iterationId}/teamdaysoff`,
+    {
+      projectId,
+      teamId,
+    }
+  ).then((res: TeamSettingsDaysOff) => res);
+}
+
 export function useCapacity({
   projectId,
   teamId,
@@ -26,12 +44,20 @@ export function useCapacity({
   const [teamMembers, setTeamMembers] = React.useState<TeamMemberCapacity[]>(
     []
   );
+  const [teamDaysOff, setTeamDaysOff] = React.useState<DateRange[]>([]);
+
   React.useEffect(() => {
     getCapacity({ projectId, teamId, iterationId }).then((res) =>
       setTeamMembers(res)
     );
+
+    getTeamDaysOff({ projectId, teamId, iterationId }).then((res) =>
+      setTeamDaysOff(res.daysOff)
+    );
   }, [projectId]);
+
   return {
     teamMembers,
+    teamDaysOff,
   };
 }

@@ -1,6 +1,7 @@
-const PAT = import.meta.env.VITE_PAT;
+let PAT = import.meta.env.VITE_PAT;
 
-console.log({ PAT });
+if (!PAT) PAT = prompt('Введите Personal Access Token Azure DevOps');
+
 const TOKEN = btoa(`${PAT}:${PAT}`);
 const API_URL = 'https://dev.azure.com';
 const ORG_NAME = 'solution-factory';
@@ -10,9 +11,13 @@ export function fetchAzure(
   options?: {
     projectId?: string;
     teamId?: string;
-    parameters?: { [key: string]: string };
+    parameters?: { [key: string | number]: string };
+    method?: 'GET' | 'POST';
+    body?: BodyInit;
   }
 ) {
+  const { projectId, teamId, method = 'GET', body } = options ?? {};
+
   const params = new URLSearchParams([['api-version', '7.0']]);
   if (options?.parameters) {
     for (const param in options?.parameters) {
@@ -20,14 +25,17 @@ export function fetchAzure(
     }
   }
 
-  const projectId = options?.projectId ? options.projectId + '/' : '';
-  const teamId = options?.teamId ? options.teamId + '/' : '';
-
   return fetch(
-    `${API_URL}/${ORG_NAME}/${projectId}${teamId}_apis${url}?${params.toString()}`,
+    `${API_URL}/${ORG_NAME}/${projectId ? projectId + '/' : ''}${
+      teamId ? teamId + '/' : ''
+    }_apis${url}?${params.toString()}`,
     {
-      method: 'GET',
-      headers: new Headers({ Authorization: `Basic ${TOKEN}` }),
+      method,
+      headers: new Headers({
+        Authorization: `Basic ${TOKEN}`,
+        'Content-Type': 'application/json',
+      }),
+      body,
     }
   ).then((res) => res.json());
 }

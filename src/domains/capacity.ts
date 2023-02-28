@@ -54,7 +54,7 @@ export function useCapacity({
     getTeamDaysOff({ projectId, teamId, iterationId }).then((res) =>
       setTeamDaysOff(res.daysOff)
     );
-  }, [projectId]);
+  }, [projectId, teamId, iterationId]);
 
   return {
     teamMembers,

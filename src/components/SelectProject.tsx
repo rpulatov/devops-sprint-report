@@ -7,13 +7,9 @@ type SelectProjectProps = {
 };
 export function SelectProject({ onSelect }: SelectProjectProps) {
   const { projects } = useProjects();
-  const [currentProjectId, setCurrentProjectId] = React.useState<
-    string | undefined
-  >();
 
   const onChange = React.useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
-      setCurrentProjectId(e.target.value);
       const selectedProject = projects.find(
         (item) => item.id === e.target.value
       );
@@ -23,7 +19,8 @@ export function SelectProject({ onSelect }: SelectProjectProps) {
   );
 
   return (
-    <select onChange={onChange} value={currentProjectId}>
+    <select onChange={onChange}>
+      <option value={undefined}>--</option>
       {projects.map((item) => (
         <option key={item.id} value={item.id}>
           {item.name}

@@ -14,6 +14,7 @@ import { SelectIteration } from './components/SelectIteration';
 import { TeamSettingsIteration } from 'azure-devops-extension-api/Work';
 import { SelectTeam } from './components/SelectTeams';
 import { DataLayer } from './components/DataLayer';
+import { NotificationLayer } from './components/NotificationLayer';
 
 function App() {
   const [currentProject, setCurrentProject] =
@@ -24,9 +25,27 @@ function App() {
 
   const [currentTeam, setCurrentTeam] = useState<WebApiTeam | null>(null);
 
+  console.log({ currentProject, currentTeam, currentIteration });
+
   return (
-    <div>
-      <SelectProject onSelect={setCurrentProject} />
+    <div
+      style={{
+        padding: 20,
+        backgroundColor: 'rgb(248, 248, 248)',
+        position: 'absolute',
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 0,
+      }}
+    >
+      <SelectProject
+        onSelect={(data) => {
+          setCurrentIteration(null);
+          setCurrentTeam(null);
+          setCurrentProject(data);
+        }}
+      />
       {currentProject ? (
         <>
           <SelectIteration
@@ -66,6 +85,7 @@ function App() {
           iteration={currentIteration}
         />
       ) : null}
+      <NotificationLayer />
     </div>
   );
 }

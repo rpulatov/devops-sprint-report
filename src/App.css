@@ -1,3 +1,7 @@
 .main-page {
   width: 100%;
 }
+
+:root {
+  --callout-background-color: #000000;
+}

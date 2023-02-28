@@ -8,13 +8,9 @@ type SelectTeamProps = {
 };
 export function SelectTeam({ projectId, onSelect }: SelectTeamProps) {
   const { teams } = useTeams({ projectId });
-  const [currentTeamId, setCurrentTeamId] = React.useState<
-    string | undefined
-  >();
 
   const onChange = React.useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
-      setCurrentTeamId(e.target.value);
       const selectedTeam = teams.find((item) => item.id === e.target.value);
       if (selectedTeam) onSelect(selectedTeam);
     },
@@ -27,7 +23,8 @@ export function SelectTeam({ projectId, onSelect }: SelectTeamProps) {
   }, [teams]);
 
   return (
-    <select onChange={onChange} value={currentTeamId}>
+    <select onChange={onChange}>
+      <option value={undefined}>--</option>
       {teamsSorted.map((item) => (
         <option key={item.id} value={item.id}>
           {item.name}

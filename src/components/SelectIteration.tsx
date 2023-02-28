@@ -8,13 +8,9 @@ type SelectIterationProps = {
 };
 export function SelectIteration({ projectId, onSelect }: SelectIterationProps) {
   const { iterations } = useIterations({ projectId });
-  const [currentIterationId, setCurrentIterationId] = React.useState<
-    string | undefined
-  >();
 
   const onChange = React.useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
-      setCurrentIterationId(e.target.value);
       const selectedIteration = iterations.find(
         (item) => item.id === e.target.value
       );
@@ -29,7 +25,8 @@ export function SelectIteration({ projectId, onSelect }: SelectIterationProps) {
   }, [iterations]);
 
   return (
-    <select onChange={onChange} value={currentIterationId}>
+    <select onChange={onChange}>
+      <option value={undefined}>--</option>
       {iterationsSorted.map((item) => (
         <option key={item.id} value={item.id}>
           {item.name}

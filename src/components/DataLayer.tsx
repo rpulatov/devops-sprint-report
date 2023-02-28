@@ -1,5 +1,4 @@
 import { TeamSettingsIteration } from 'azure-devops-extension-api/Work';
-import { WorkItem } from 'azure-devops-extension-api/WorkItemTracking/WorkItemTracking';
 import { useCallback, useMemo } from 'react';
 import { useCapacity } from '../domains/capacity';
 import { useWorkItems } from '../domains/workItems';
@@ -90,7 +89,7 @@ export function DataLayer({ projectId, teamId, iteration }: DataLayerProps) {
     );
 
     for (const item of workItems) {
-      const linkToTeamReportRow = teamReportObj[item.assignedTo.id];
+      const linkToTeamReportRow = teamReportObj[item?.assignedTo?.id];
       if (!linkToTeamReportRow) continue;
       if (item.overplan) {
         linkToTeamReportRow.overplanEstimate += item.originalEstimate;
@@ -110,18 +109,20 @@ export function DataLayer({ projectId, teamId, iteration }: DataLayerProps) {
     <div>
       <table>
         <thead>
-          <th>ФИО</th>
-          <th>Возможная загрузка, часы</th>
-          <th>Плановая загрузка, часы</th>
-          <th>Фактическая выработка по плановым задачам, часы</th>
-          <th>Оставшаяся работа по плановым задачам, часы</th>
-          <th>Фактическая выработка по добавленным задачам, часы</th>
-          <th>Добавленная загрузка (по новым задачам), часы</th>
-          <th>Оставшаяяся работа по добавленным задачам, часы</th>
+          <tr>
+            <th>ФИО</th>
+            <th>Возможная загрузка, часы</th>
+            <th>Плановая загрузка, часы</th>
+            <th>Фактическая выработка по плановым задачам, часы</th>
+            <th>Оставшаяся работа по плановым задачам, часы</th>
+            <th>Фактическая выработка по добавленным задачам, часы</th>
+            <th>Добавленная загрузка (по новым задачам), часы</th>
+            <th>Оставшаяяся работа по добавленным задачам, часы</th>
+          </tr>
         </thead>
         <tbody>
           {teamReport.map((item) => (
-            <tr>
+            <tr key={item.id}>
               <td>{item.name}</td>
               <td>{item.capacity}</td>
               <td>{item.planEstimate}</td>

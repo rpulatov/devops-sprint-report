@@ -25,7 +25,7 @@ function App() {
   const [currentTeam, setCurrentTeam] = useState<WebApiTeam | null>(null);
 
   return (
-    <Page className="main-page" orientation={0}>
+    <div>
       <SelectProject onSelect={setCurrentProject} />
       {currentProject ? (
         <>
@@ -66,7 +66,7 @@ function App() {
           iteration={currentIteration}
         />
       ) : null}
-    </Page>
+    </div>
   );
 }
 

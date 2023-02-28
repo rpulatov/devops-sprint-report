@@ -32,15 +32,15 @@ export function NotificationLayer() {
           message: text,
           ref,
           timer: setTimeout(() => {
-            // if (ref.current) {
-            //   ref.current
-            //     .fadeOut()
-            //     .promise.finally(() =>
-            //       setNotifications((prev) =>
-            //         prev.filter((item) => item.id !== currentId)
-            //       )
-            //     );
-            // }
+            if (ref.current) {
+              ref.current
+                .fadeOut()
+                .promise.finally(() =>
+                  setNotifications((prev) =>
+                    prev.filter((item) => item.id !== currentId)
+                  )
+                );
+            }
           }, 3000),
         },
       ]);

@@ -20,3 +20,13 @@ class NotificationObserver {
 }
 
 export const notificationObserver = new NotificationObserver();
+
+export function errorNotification(e: unknown) {
+  if (e instanceof Error) {
+    notificationObserver.broadcast(e.message);
+  } else if (typeof e === 'string') {
+    notificationObserver.broadcast(e);
+  } else {
+    notificationObserver.broadcast('Api error');
+  }
+}

@@ -1,6 +1,7 @@
 import React from 'react';
 import { fetchAzure } from '../api';
 import { TeamSettingsIteration } from 'azure-devops-extension-api/Work';
+import { errorNotification } from '../api/notificationObserver';
 
 type GetIterationsParams = { projectId: string };
 async function getIterations({ projectId }: GetIterationsParams) {
@@ -14,7 +15,10 @@ export function useIterations({ projectId }: GetIterationsParams) {
     []
   );
   React.useEffect(() => {
-    getIterations({ projectId }).then((res) => setIterations(res));
+    setIterations([]);
+    getIterations({ projectId })
+      .then((res) => setIterations(res))
+      .catch(errorNotification);
   }, [projectId]);
   return {
     iterations,

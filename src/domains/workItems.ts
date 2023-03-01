@@ -1,4 +1,3 @@
-import { WebApiTeam } from 'azure-devops-extension-api/Core';
 import { TeamFieldValues } from 'azure-devops-extension-api/Work';
 import {
   WorkItem,
@@ -6,6 +5,7 @@ import {
 } from 'azure-devops-extension-api/WorkItemTracking/WorkItemTracking';
 import React from 'react';
 import { fetchAzure } from '../api';
+import { errorNotification } from '../api/notificationObserver';
 
 type GetTeamFieldValues = {
   projectId: string;
@@ -32,6 +32,8 @@ async function getWorkItemsByWiql({
   })
     .then((res: WorkItemQueryResult) => res.workItems)
     .then((workItems) => {
+      if (workItems.length === 0)
+        return Promise.reject(new Error('No work items'));
       const ids = workItems.map((item) => item.id).join(',');
       return fetchAzure('/wit/workItems', {
         parameters: { ids },
@@ -70,6 +72,19 @@ function getDataFromWorkItem(item: WorkItem) {
   };
 }
 
+type CreateQueryWiql = {
+  iterationPath: string;
+  areaPath: string;
+};
+function createQueryWiql({ iterationPath, areaPath }: CreateQueryWiql) {
+  return `SELECT [System.Id] 
+  FROM WorkItem 
+ WHERE ([System.WorkItemType] IN GROUP 'Microsoft.TaskCategory' OR [System.WorkItemType] IN GROUP 'Microsoft.BugCategory' OR [System.WorkItemType] IN GROUP 'Microsoft.RequirementCategory') 
+   AND [System.State] NOT IN ('Removed') 
+   AND [System.IterationPath] UNDER '${iterationPath}'  
+   AND ([System.AreaPath] = '${areaPath}' )`;
+}
+
 type UseWorkItems = {
   projectId: string;
   teamId: string;
@@ -80,31 +95,27 @@ export function useWorkItems({
   teamId,
   iterationPath,
 }: UseWorkItems) {
-  const [areaPath, setAreaPath] = React.useState<string | null>(null);
   const [workItems, setWorkItems] = React.useState<
     ReturnType<typeof getDataFromWorkItem>[]
   >([]);
 
   React.useEffect(() => {
-    getTeamFieldValues({ projectId, teamId }).then((res) =>
-      setAreaPath(res.defaultValue)
-    );
-  }, [projectId, teamId]);
+    const update = async () => {
+      const teamFieldValues = await getTeamFieldValues({ projectId, teamId });
+      const areaPath = teamFieldValues.defaultValue;
+      const query = createQueryWiql({ iterationPath, areaPath });
+      const workItemsRaw = await getWorkItemsByWiql({
+        projectId,
+        teamId,
+        query,
+      });
+      const result = workItemsRaw.map(getDataFromWorkItem);
+      setWorkItems(result);
+    };
 
-  React.useEffect(() => {
-    if (!areaPath) return undefined;
-
-    const query = `SELECT [System.Id] 
-                     FROM WorkItem 
-                    WHERE ([System.WorkItemType] IN GROUP 'Microsoft.TaskCategory' OR [System.WorkItemType] IN GROUP 'Microsoft.BugCategory' OR [System.WorkItemType] IN GROUP 'Microsoft.RequirementCategory') 
-                      AND [System.State] NOT IN ('Removed') 
-                      AND [System.IterationPath] UNDER '${iterationPath}'  
-                      AND ([System.AreaPath] = '${areaPath}' )`;
-
-    getWorkItemsByWiql({ projectId, teamId, query })
-      .then((res) => res.map(getDataFromWorkItem))
-      .then((res) => setWorkItems(res));
-  }, [projectId, teamId, iterationPath, areaPath]);
+    setWorkItems([]);
+    update().catch(errorNotification);
+  }, [projectId, teamId, iterationPath]);
   return {
     workItems,
   };

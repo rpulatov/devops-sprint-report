@@ -1,5 +1,3 @@
-import { notificationObserver } from './notificationObserver';
-
 let PAT = import.meta.env.VITE_PAT;
 
 const STORAGE_PARAM = '_t';
@@ -44,21 +42,10 @@ export function fetchAzure(
       }),
       body,
     }
-  )
-    .then((res) => {
-      return res.json().then((data) => {
-        if (res.status !== 200) return Promise.reject(new Error(data.message));
-        return data;
-      });
-    })
-    .catch((e) => {
-      if (e instanceof Error) {
-        notificationObserver.broadcast(e.message);
-      } else if (typeof e === 'string') {
-        notificationObserver.broadcast(e);
-      } else {
-        notificationObserver.broadcast('Api error');
-      }
-      return Promise.reject(e);
+  ).then((res) => {
+    return res.json().then((data) => {
+      if (res.status !== 200) return Promise.reject(new Error(data.message));
+      return data;
     });
+  });
 }

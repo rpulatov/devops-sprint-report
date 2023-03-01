@@ -5,6 +5,7 @@ import {
   TeamMemberCapacity,
   TeamSettingsDaysOff,
 } from 'azure-devops-extension-api/Work';
+import { errorNotification } from '../api/notificationObserver';
 
 type GetCapacityParams = {
   projectId: string;
@@ -47,13 +48,15 @@ export function useCapacity({
   const [teamDaysOff, setTeamDaysOff] = React.useState<DateRange[]>([]);
 
   React.useEffect(() => {
-    getCapacity({ projectId, teamId, iterationId }).then((res) =>
-      setTeamMembers(res)
-    );
+    setTeamMembers([]);
+    setTeamDaysOff([]);
+    getCapacity({ projectId, teamId, iterationId })
+      .then((res) => setTeamMembers(res))
+      .catch(errorNotification);
 
-    getTeamDaysOff({ projectId, teamId, iterationId }).then((res) =>
-      setTeamDaysOff(res.daysOff)
-    );
+    getTeamDaysOff({ projectId, teamId, iterationId })
+      .then((res) => setTeamDaysOff(res.daysOff))
+      .catch(errorNotification);
   }, [projectId, teamId, iterationId]);
 
   return {

@@ -23,8 +23,6 @@ export function NotificationLayer() {
 
       const ref = React.createRef<Toast>();
 
-      console.log('setNotifications');
-
       setNotifications((prev) => [
         ...prev,
         {
@@ -50,8 +48,6 @@ export function NotificationLayer() {
       notificationObserver.unsubscribe(fn);
     };
   }, []);
-
-  console.log({ notifications });
 
   return notifications.map((item) => (
     <Toast key={item.id} ref={item.ref} message={item.message} />

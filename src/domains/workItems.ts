@@ -34,12 +34,25 @@ async function getWorkItemsByWiql({
     .then((workItems) => {
       if (workItems.length === 0)
         return Promise.reject(new Error('No work items'));
-      const ids = workItems.map((item) => item.id).join(',');
-      return fetchAzure('/wit/workItems', {
-        parameters: { ids },
-      });
+      const workItemsIds = workItems.map((item) => item.id);
+
+      const chunkSize = 200;
+      const chunksIds: string[] = [];
+      for (let i = 0; i < workItemsIds.length; i += chunkSize) {
+        const chunk = workItemsIds.slice(i, i + chunkSize);
+        chunksIds.push(chunk.join(','));
+      }
+
+      return Promise.all(
+        chunksIds.map(
+          (ids) =>
+            fetchAzure('/wit/workItems', {
+              parameters: { ids },
+            }) //.then((res: { value: WorkItem[] }) => res.value)
+        )
+      );
     })
-    .then((res: { value: WorkItem[] }) => res.value);
+    .then((res: { value: WorkItem[] }[]) => res.flatMap((item) => item.value));
 }
 
 function getDataFromWorkItem(item: WorkItem) {

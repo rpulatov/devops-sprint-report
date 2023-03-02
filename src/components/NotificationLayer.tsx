@@ -49,7 +49,11 @@ export function NotificationLayer() {
     };
   }, []);
 
-  return notifications.map((item) => (
-    <Toast key={item.id} ref={item.ref} message={item.message} />
-  ));
+  return (
+    <>
+      {notifications.map((item) => (
+        <Toast key={item.id} ref={item.ref} message={item.message} />
+      ))}
+    </>
+  );
 }

@@ -1,11 +1,6 @@
 let PAT = import.meta.env.VITE_PAT;
 
-const STORAGE_PARAM = '_t';
-
-if (!PAT) PAT = sessionStorage.getItem(STORAGE_PARAM);
 if (!PAT) PAT = prompt('Введите Personal Access Token Azure DevOps');
-
-sessionStorage.setItem(STORAGE_PARAM, PAT);
 
 const TOKEN = btoa(`${PAT}:${PAT}`);
 const API_URL = 'https://dev.azure.com';

@@ -47,7 +47,7 @@ async function getWorkItemsByWiql({
         chunksIds.map(
           (ids) =>
             fetchAzure('/wit/workItems', {
-              parameters: { ids },
+              parameters: { ids, $extends: true },
             }) //.then((res: { value: WorkItem[] }) => res.value)
         )
       );
@@ -75,6 +75,22 @@ function getDataFromWorkItem(item: WorkItem) {
     item.fields['System.State'] ?? 'New'
   );
 
+  const workItemType = item.fields['System.WorkItemType'];
+
+  if (assignedTo?.id === 'e7b7a879-846d-49f0-af81-b2e6ca149b3e') {
+    console.log(workItemType, item);
+  }
+
+  // user story
+  // -- наименование
+  // -- название фичи
+  // -- статус
+  // -- ответственный
+  // -- Плановая загрузка, часы
+  // -- Фактическая выработка, часы
+  // -- Добавленная загрузка, часы
+  // -- Оставшаяся работа, часы
+
   return {
     overplan,
     assignedTo,
@@ -98,6 +114,8 @@ function createQueryWiql({ iterationPath, areaPath }: CreateQueryWiql) {
    AND ([System.AreaPath] = '${areaPath}' )`;
 }
 
+export type WorkItemState = ReturnType<typeof getDataFromWorkItem>;
+
 type UseWorkItems = {
   projectId: string;
   teamId: string;
@@ -108,9 +126,7 @@ export function useWorkItems({
   teamId,
   iterationPath,
 }: UseWorkItems) {
-  const [workItems, setWorkItems] = React.useState<
-    ReturnType<typeof getDataFromWorkItem>[]
-  >([]);
+  const [workItems, setWorkItems] = React.useState<WorkItemState[]>([]);
 
   React.useEffect(() => {
     const update = async () => {

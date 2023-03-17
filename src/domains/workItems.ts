@@ -44,18 +44,25 @@ async function getWorkItemsByWiql({
       }
 
       return Promise.all(
-        chunksIds.map(
-          (ids) =>
-            fetchAzure('/wit/workItems', {
-              parameters: { ids, $extends: true },
-            }) //.then((res: { value: WorkItem[] }) => res.value)
+        chunksIds.map((ids) =>
+          fetchAzure('/wit/workItems', {
+            parameters: { ids, $expand: 'relations' },
+          })
         )
       );
     })
     .then((res: { value: WorkItem[] }[]) => res.flatMap((item) => item.value));
 }
 
+function parseWorkItemIdFromUrl(url: string | null) {
+  if (!url) return null;
+  const matchData = url.match(/\/(\d*)$/);
+  if (!matchData || matchData.length < 2) return null;
+  return Number(matchData[1]);
+}
+
 function getDataFromWorkItem(item: WorkItem) {
+  const id = item.id;
   const overplan = Boolean(item.fields['Custom.Overplan'] ?? false);
   const assignedTo = item.fields['System.AssignedTo'] as {
     displayName: string;
@@ -75,10 +82,17 @@ function getDataFromWorkItem(item: WorkItem) {
     item.fields['System.State'] ?? 'New'
   );
 
-  const workItemType = item.fields['System.WorkItemType'];
+  const workItemType: string = item.fields['System.WorkItemType'];
+
+  const relationReverse = item.relations.find(
+    (rel) => rel.rel === 'System.LinkTypes.Hierarchy-Reverse'
+  );
+
+  const parentLink = relationReverse?.url ?? null;
+  const parentWorkItemId = parseWorkItemIdFromUrl(parentLink);
 
   if (assignedTo?.id === 'e7b7a879-846d-49f0-af81-b2e6ca149b3e') {
-    console.log(workItemType, item);
+    console.log(workItemType, item, parentWorkItemId);
   }
 
   // user story
@@ -92,12 +106,16 @@ function getDataFromWorkItem(item: WorkItem) {
   // -- Оставшаяся работа, часы
 
   return {
+    id,
     overplan,
     assignedTo,
     originalEstimate,
     remainingWork,
     completedWork,
     isClosed,
+    workItemType,
+    parentLink,
+    parentWorkItemId,
   };
 }
 

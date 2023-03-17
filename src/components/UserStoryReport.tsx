@@ -1,7 +1,10 @@
 import { useMemo } from 'react';
+import { WorkItemState } from '../domains/workItems';
 
-type UserStoryReportProps = {};
-export function UserStoryReport({}: UserStoryReportProps) {
+type UserStoryReportProps = {
+  workItems: WorkItemState[];
+};
+export function UserStoryReport({ workItems }: UserStoryReportProps) {
   return null;
 }
 

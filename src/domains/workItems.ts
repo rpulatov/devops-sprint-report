@@ -3,9 +3,7 @@ import {
   WorkItem,
   WorkItemQueryResult,
 } from 'azure-devops-extension-api/WorkItemTracking/WorkItemTracking';
-import React from 'react';
 import { fetchAzure } from '../api';
-import { errorNotification } from '../api/notificationObserver';
 
 type GetTeamFieldValues = {
   projectId: string;
@@ -91,20 +89,6 @@ function getDataFromWorkItem(item: WorkItem) {
   const parentLink = relationReverse?.url ?? null;
   const parentWorkItemId = parseWorkItemIdFromUrl(parentLink);
 
-  if (assignedTo?.id === 'e7b7a879-846d-49f0-af81-b2e6ca149b3e') {
-    console.log(workItemType, item, parentWorkItemId);
-  }
-
-  // user story
-  // -- наименование
-  // -- название фичи
-  // -- статус
-  // -- ответственный
-  // -- Плановая загрузка, часы
-  // -- Фактическая выработка, часы
-  // -- Добавленная загрузка, часы
-  // -- Оставшаяся работа, часы
-
   return {
     id,
     overplan,
@@ -134,36 +118,23 @@ function createQueryWiql({ iterationPath, areaPath }: CreateQueryWiql) {
 
 export type WorkItemState = ReturnType<typeof getDataFromWorkItem>;
 
-type UseWorkItems = {
+export type GetWorkItemsByIterationParams = {
   projectId: string;
   teamId: string;
   iterationPath: string;
 };
-export function useWorkItems({
+export async function getWorkItemsByIteration({
   projectId,
   teamId,
   iterationPath,
-}: UseWorkItems) {
-  const [workItems, setWorkItems] = React.useState<WorkItemState[]>([]);
-
-  React.useEffect(() => {
-    const update = async () => {
-      const teamFieldValues = await getTeamFieldValues({ projectId, teamId });
-      const areaPath = teamFieldValues.defaultValue;
-      const query = createQueryWiql({ iterationPath, areaPath });
-      const workItemsRaw = await getWorkItemsByWiql({
-        projectId,
-        teamId,
-        query,
-      });
-      const result = workItemsRaw.map(getDataFromWorkItem);
-      setWorkItems(result);
-    };
-
-    setWorkItems([]);
-    update().catch(errorNotification);
-  }, [projectId, teamId, iterationPath]);
-  return {
-    workItems,
-  };
+}: GetWorkItemsByIterationParams) {
+  const teamFieldValues = await getTeamFieldValues({ projectId, teamId });
+  const areaPath = teamFieldValues.defaultValue;
+  const query = createQueryWiql({ iterationPath, areaPath });
+  const workItemsRaw = await getWorkItemsByWiql({
+    projectId,
+    teamId,
+    query,
+  });
+  return workItemsRaw.map(getDataFromWorkItem);
 }

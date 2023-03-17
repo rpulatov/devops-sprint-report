@@ -1,6 +1,6 @@
 import { TeamProjectReference } from 'azure-devops-extension-api/Core';
 import React from 'react';
-import { useProjects } from '../domains';
+import { useProjects } from '../hooks/useProjects';
 
 type SelectProjectProps = {
   onSelect: (project: TeamProjectReference) => void;

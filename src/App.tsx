@@ -25,8 +25,6 @@ function App() {
 
   const [currentTeam, setCurrentTeam] = useState<WebApiTeam | null>(null);
 
-  console.log({ currentProject, currentTeam, currentIteration });
-
   return (
     <div
       style={{

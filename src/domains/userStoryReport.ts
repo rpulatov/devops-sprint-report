@@ -25,6 +25,7 @@ export type UserStoryReportItem = {
   remaining: number;
   /** Добавленная загрузка, часы */
   overplanEstimate: number;
+  order: number;
 };
 
 const USER_STORE_EMPTY_KEY = 0;
@@ -42,6 +43,7 @@ function createUserStoryReportItem(id: number): UserStoryReportItem {
     complete: 0,
     remaining: 0,
     overplanEstimate: 0,
+    order: 0,
   };
 }
 
@@ -83,10 +85,13 @@ export async function getUserStoryReport({
       item.assignedToName = workItem.assignedTo.displayName;
       item.state = workItem.state;
       item.isClosed = workItem.isClosed;
+      item.order = workItem.order;
     }
   }
 
-  const userStories = [...userStoryMap.values()];
+  const userStories = [...userStoryMap.values()]; /*.sort(
+    (a, b) => a.order - b.order
+  );*/
 
   const featureIds = userStories
     .map(({ parentWorkItemId }) => parentWorkItemId)

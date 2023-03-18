@@ -30,7 +30,7 @@ export async function getWorkItemsByIds(workItemsIds: number[]) {
   return Promise.all(
     chunksIds.map((ids) =>
       fetchAzure('/wit/workItems', {
-        parameters: { ids, $expand: 'relations' },
+        parameters: { ids /* $expand: 'relations'*/ },
       })
     )
   ).then((res: { value: WorkItem[] }[]) => res.flatMap((item) => item.value));
@@ -91,12 +91,9 @@ export function getDataFromWorkItem(item: WorkItem) {
   const workItemType: 'Task' | 'Bug' | 'User Story' | 'Feature' =
     item.fields['System.WorkItemType'];
 
-  const relationReverse = item.relations.find(
-    (rel) => rel.rel === 'System.LinkTypes.Hierarchy-Reverse'
-  );
+  const parentWorkItemId = item.fields['System.Parent'] as number;
 
-  const parentLink = relationReverse?.url ?? null;
-  const parentWorkItemId = parseWorkItemIdFromUrl(parentLink);
+  const order = item.fields['Microsoft.VSTS.Common.StackRank'] as number;
 
   return {
     id,
@@ -109,8 +106,8 @@ export function getDataFromWorkItem(item: WorkItem) {
     state,
     isClosed,
     workItemType,
-    parentLink,
     parentWorkItemId,
+    order,
   };
 }
 

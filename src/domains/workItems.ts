@@ -9,15 +9,35 @@ type GetTeamFieldValues = {
   projectId: string;
   teamId: string;
 };
-async function getTeamFieldValues({ projectId, teamId }: GetTeamFieldValues) {
+export async function getTeamFieldValues({
+  projectId,
+  teamId,
+}: GetTeamFieldValues) {
   return fetchAzure(`/work/teamsettings/teamfieldvalues`, {
     projectId,
     teamId,
   }).then((res: TeamFieldValues) => res);
 }
 
+export async function getWorkItemsByIds(workItemsIds: number[]) {
+  const chunkSize = 200;
+  const chunksIds: string[] = [];
+  for (let i = 0; i < workItemsIds.length; i += chunkSize) {
+    const chunk = workItemsIds.slice(i, i + chunkSize);
+    chunksIds.push(chunk.join(','));
+  }
+
+  return Promise.all(
+    chunksIds.map((ids) =>
+      fetchAzure('/wit/workItems', {
+        parameters: { ids, $expand: 'relations' },
+      })
+    )
+  ).then((res: { value: WorkItem[] }[]) => res.flatMap((item) => item.value));
+}
+
 type GetWorkItemsByWiql = { projectId: string; teamId: string; query: string };
-async function getWorkItemsByWiql({
+export async function getWorkItemsByWiql({
   projectId,
   teamId,
   query,
@@ -33,23 +53,8 @@ async function getWorkItemsByWiql({
       if (workItems.length === 0)
         return Promise.reject(new Error('No work items'));
       const workItemsIds = workItems.map((item) => item.id);
-
-      const chunkSize = 200;
-      const chunksIds: string[] = [];
-      for (let i = 0; i < workItemsIds.length; i += chunkSize) {
-        const chunk = workItemsIds.slice(i, i + chunkSize);
-        chunksIds.push(chunk.join(','));
-      }
-
-      return Promise.all(
-        chunksIds.map((ids) =>
-          fetchAzure('/wit/workItems', {
-            parameters: { ids, $expand: 'relations' },
-          })
-        )
-      );
-    })
-    .then((res: { value: WorkItem[] }[]) => res.flatMap((item) => item.value));
+      return getWorkItemsByIds(workItemsIds);
+    });
 }
 
 function parseWorkItemIdFromUrl(url: string | null) {
@@ -59,8 +64,9 @@ function parseWorkItemIdFromUrl(url: string | null) {
   return Number(matchData[1]);
 }
 
-function getDataFromWorkItem(item: WorkItem) {
+export function getDataFromWorkItem(item: WorkItem) {
   const id = item.id;
+  const name = item.fields['System.Title'] as string;
   const overplan = Boolean(item.fields['Custom.Overplan'] ?? false);
   const assignedTo = item.fields['System.AssignedTo'] as {
     displayName: string;
@@ -76,8 +82,10 @@ function getDataFromWorkItem(item: WorkItem) {
     item.fields['Microsoft.VSTS.Scheduling.CompletedWork'] ?? 0
   );
 
+  const state = (item.fields['System.State'] ?? 'New') as string;
+
   const isClosed = ['Closed', 'In QA', 'Ready for Merge', 'Resolved'].includes(
-    item.fields['System.State'] ?? 'New'
+    state
   );
 
   const workItemType: 'Task' | 'Bug' | 'User Story' | 'Feature' =
@@ -92,11 +100,13 @@ function getDataFromWorkItem(item: WorkItem) {
 
   return {
     id,
+    name,
     overplan,
     assignedTo,
     originalEstimate,
     remainingWork,
     completedWork,
+    state,
     isClosed,
     workItemType,
     parentLink,
@@ -104,7 +114,7 @@ function getDataFromWorkItem(item: WorkItem) {
   };
 }
 
-type CreateQueryWiql = {
+export type CreateQueryWiql = {
   iterationPath: string;
   areaPath: string;
 };

@@ -1,4 +1,4 @@
-import { WorkItemState } from './workItems';
+import { getWorkItemsByIds, WorkItemState } from './workItems';
 
 export type GetUserStoryReportParams = {
   workItems: WorkItemState[];
@@ -12,16 +12,19 @@ export type GetUserStoryReportParams = {
 export type UserStoryReportItem = {
   id: number;
   name: string;
+  parentWorkItemId: number | null;
+  parentName: string;
+  state: string;
+  isClosed: boolean;
+  assignedToName: string;
   /** Плановая загрузка, часы */
   planEstimate: number;
   /** Фактическая выработка, часы */
-  planComplete: number;
+  complete: number;
   /** Оставшаяся работа, часы */
-  planRemaining: number;
+  remaining: number;
   /** Добавленная загрузка, часы */
   overplanEstimate: number;
-  // overplanComplete: number;
-  // overplanRemaining: number;
 };
 
 const USER_STORE_EMPTY_KEY = 0;
@@ -29,27 +32,34 @@ const USER_STORE_EMPTY_KEY = 0;
 function createUserStoryReportItem(id: number): UserStoryReportItem {
   return {
     id,
-    name: '',
+    name: 'Empty',
+    parentWorkItemId: null,
+    parentName: '',
+    state: '',
+    isClosed: false,
+    assignedToName: '',
     planEstimate: 0,
-    planComplete: 0,
-    planRemaining: 0,
+    complete: 0,
+    remaining: 0,
     overplanEstimate: 0,
   };
 }
 
 export async function getUserStoryReport({
   workItems,
-}: GetUserStoryReportParams) {
+}: GetUserStoryReportParams): Promise<UserStoryReportItem[]> {
   const userStoryMap = new Map<number, UserStoryReportItem>();
 
-  for (const {
-    parentWorkItemId,
-    workItemType,
-    overplan,
-    originalEstimate,
-    completedWork,
-    remainingWork
-  } of workItems) {
+  for (const workItem of workItems) {
+    const {
+      parentWorkItemId,
+      workItemType,
+      overplan,
+      originalEstimate,
+      completedWork,
+      remainingWork,
+    } = workItem;
+
     if (['Task', 'Bug'].includes(workItemType)) {
       const key = parentWorkItemId || USER_STORE_EMPTY_KEY;
       const item = userStoryMap.get(key) || createUserStoryReportItem(key);
@@ -60,9 +70,38 @@ export async function getUserStoryReport({
         item.overplanEstimate += originalEstimate;
       } else {
         item.planEstimate += originalEstimate;
-        item.planComplete += completedWork
-        item.planRemaining += remainingWork
       }
+      item.complete += completedWork;
+      item.remaining += remainingWork;
+    } else {
+      const key = workItem.id;
+      const item = userStoryMap.get(key) || createUserStoryReportItem(key);
+      userStoryMap.set(key, item);
+
+      item.name = workItem.name;
+      item.parentWorkItemId = parentWorkItemId;
+      item.assignedToName = workItem.assignedTo.displayName;
+      item.state = workItem.state;
+      item.isClosed = workItem.isClosed;
     }
   }
+
+  const userStories = [...userStoryMap.values()];
+
+  const featureIds = userStories
+    .map(({ parentWorkItemId }) => parentWorkItemId)
+    .filter((id): id is number => id !== null);
+
+  const features = await getWorkItemsByIds(featureIds);
+  const featureNamesMap = features.reduce((acc, feature) => {
+    acc.set(feature.id, feature.fields['System.Title']);
+    return acc;
+  }, new Map<number, string>());
+
+  return userStories.map((item) => ({
+    ...item,
+    parentName: item.parentWorkItemId
+      ? featureNamesMap.get(item.parentWorkItemId) || ''
+      : '',
+  }));
 }

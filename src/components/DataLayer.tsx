@@ -2,6 +2,7 @@ import { TeamSettingsIteration } from 'azure-devops-extension-api/Work';
 import { useCallback, useMemo } from 'react';
 import { useCapacity } from '../hooks/useCapacity';
 import { useWorkItems } from '../hooks/useWorkItems';
+import { TypeReport } from '../types/report';
 
 import { diffInDays } from '../utils';
 import { TeamReport } from './TeamReport';
@@ -11,8 +12,14 @@ type DataLayerProps = {
   projectId: string;
   teamId: string;
   iteration: TeamSettingsIteration;
+  typeReport: TypeReport;
 };
-export function DataLayer({ projectId, teamId, iteration }: DataLayerProps) {
+export function DataLayer({
+  projectId,
+  teamId,
+  iteration,
+  typeReport,
+}: DataLayerProps) {
   const { teamMembers, teamDaysOff } = useCapacity({
     projectId,
     teamId,
@@ -46,8 +53,9 @@ export function DataLayer({ projectId, teamId, iteration }: DataLayerProps) {
         teamMembers={teamMembers}
         iterationDays={iterationDays}
         workItems={workItems}
+        typeReport={typeReport}
       />
-      <UserStoryReport workItems={workItems} />
+      <UserStoryReport workItems={workItems} typeReport={typeReport} />
     </div>
   );
 }

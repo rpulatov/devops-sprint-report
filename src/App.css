@@ -5,3 +5,11 @@
 :root {
   --callout-background-color: #000000;
 }
+
+.userStoryClosed {
+  background-color: #7eb179;
+}
+
+.userStoryNotClosed {
+  background-color: #ff8f8f;
+}

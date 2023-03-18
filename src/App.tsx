@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 
 import { Page } from 'azure-devops-ui/Page';
 import { Card } from 'azure-devops-ui/Card';
@@ -15,6 +15,7 @@ import { TeamSettingsIteration } from 'azure-devops-extension-api/Work';
 import { SelectTeam } from './components/SelectTeams';
 import { DataLayer } from './components/DataLayer';
 import { NotificationLayer } from './components/NotificationLayer';
+import { TypeReport } from './types/report';
 
 function App() {
   const [currentProject, setCurrentProject] =
@@ -24,6 +25,15 @@ function App() {
     useState<TeamSettingsIteration | null>(null);
 
   const [currentTeam, setCurrentTeam] = useState<WebApiTeam | null>(null);
+  const [typeReport, setTypeReport] = useState<TypeReport>(
+    TypeReport.SprintPlan
+  );
+
+  const onChangeReport = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) =>
+      setTypeReport(e.target.value as TypeReport),
+    []
+  );
 
   return (
     <div
@@ -51,6 +61,10 @@ function App() {
             onSelect={setCurrentIteration}
           />
           <SelectTeam projectId={currentProject.id} onSelect={setCurrentTeam} />
+          <select onChange={onChangeReport}>
+            <option value={TypeReport.SprintPlan}>План спринта</option>
+            <option value={TypeReport.SprintResult}>Результат спринта</option>
+          </select>
         </>
       ) : null}
 
@@ -58,11 +72,16 @@ function App() {
         <span>Наименование проекта: {currentProject?.name}</span>
       </p>
       <p>
-        <span>Спринт: {currentIteration?.name}</span>
+        <span>
+          {typeReport === TypeReport.SprintPlan
+            ? 'План спринта:'
+            : 'Результат спринта:'}{' '}
+          {currentIteration?.name}
+        </span>
       </p>
       <p>
         <span>
-          C:{' '}
+          Период с:{' '}
           {currentIteration?.attributes?.startDate
             ? new Date(
                 currentIteration?.attributes?.startDate
@@ -81,6 +100,7 @@ function App() {
           projectId={currentProject.id}
           teamId={currentTeam.id}
           iteration={currentIteration}
+          typeReport={typeReport}
         />
       ) : null}
       <NotificationLayer />

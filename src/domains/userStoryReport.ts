@@ -56,7 +56,7 @@ function createOrUpdateUserStoryMap(
 
   item.name = workItem.name;
   item.parentWorkItemId = workItem.parentWorkItemId;
-  item.assignedToName = workItem.assignedTo.displayName;
+  item.assignedToName = workItem.assignedTo?.displayName || '-';
   item.state = workItem.state;
   item.isClosed = workItem.isClosed;
   item.order = workItem.order;

@@ -1,14 +1,13 @@
-import { getWorkItemsByIds, WorkItemState } from './workItems';
+import {
+  getDataFromWorkItem,
+  getWorkItemsByIds,
+  WorkItemState,
+} from './workItems';
 
 export type GetUserStoryReportParams = {
   workItems: WorkItemState[];
 };
 
-// user story
-// -- наименование
-// -- название фичи
-// -- статус
-// -- ответственный
 export type UserStoryReportItem = {
   id: number;
   name: string;
@@ -28,12 +27,12 @@ export type UserStoryReportItem = {
   order: number;
 };
 
-const USER_STORE_EMPTY_KEY = 0;
+const USER_STORE_EMPTY_KEY = -1;
 
 function createUserStoryReportItem(id: number): UserStoryReportItem {
   return {
     id,
-    name: 'Empty',
+    name: '',
     parentWorkItemId: null,
     parentName: '',
     state: '',
@@ -45,6 +44,22 @@ function createUserStoryReportItem(id: number): UserStoryReportItem {
     overplanEstimate: 0,
     order: 0,
   };
+}
+
+function createOrUpdateUserStoryMap(
+  map: Map<number, UserStoryReportItem>,
+  workItem: WorkItemState
+) {
+  const key = workItem.id;
+  const item = map.get(key) || createUserStoryReportItem(key);
+  map.set(key, item);
+
+  item.name = workItem.name;
+  item.parentWorkItemId = workItem.parentWorkItemId;
+  item.assignedToName = workItem.assignedTo.displayName;
+  item.state = workItem.state;
+  item.isClosed = workItem.isClosed;
+  item.order = workItem.order;
 }
 
 export async function getUserStoryReport({
@@ -64,6 +79,11 @@ export async function getUserStoryReport({
 
     if (['Task', 'Bug'].includes(workItemType)) {
       const key = parentWorkItemId || USER_STORE_EMPTY_KEY;
+
+      if (key === USER_STORE_EMPTY_KEY) {
+        console.log(workItem);
+      }
+
       const item = userStoryMap.get(key) || createUserStoryReportItem(key);
       userStoryMap.set(key, item);
 
@@ -76,23 +96,27 @@ export async function getUserStoryReport({
       item.complete += completedWork;
       item.remaining += remainingWork;
     } else {
-      const key = workItem.id;
-      const item = userStoryMap.get(key) || createUserStoryReportItem(key);
-      userStoryMap.set(key, item);
-
-      item.name = workItem.name;
-      item.parentWorkItemId = parentWorkItemId;
-      item.assignedToName = workItem.assignedTo.displayName;
-      item.state = workItem.state;
-      item.isClosed = workItem.isClosed;
-      item.order = workItem.order;
+      createOrUpdateUserStoryMap(userStoryMap, workItem);
     }
   }
 
-  const userStories = [...userStoryMap.values()]; /*.sort(
-    (a, b) => a.order - b.order
-  );*/
+  // add user story from another sprint
+  const emptyUserStoryIds = [...userStoryMap.values()]
+    .filter((item) => !item.name)
+    .map(({ id }) => id);
+  const emptyUserStories = await getWorkItemsByIds(emptyUserStoryIds);
+  emptyUserStories.forEach((item) => {
+    const workItem = getDataFromWorkItem(item);
+    workItem.name = `(Wrong Sprint) ${workItem.name}`;
+    createOrUpdateUserStoryMap(userStoryMap, workItem);
+  });
 
+  // sort
+  const userStories = [...userStoryMap.values()].sort(
+    (a, b) => a.order - b.order
+  );
+
+  // add features
   const featureIds = userStories
     .map(({ parentWorkItemId }) => parentWorkItemId)
     .filter((id): id is number => id !== null);

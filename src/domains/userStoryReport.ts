@@ -102,7 +102,7 @@ export async function getUserStoryReport({
 
   // add user story from another sprint
   const emptyUserStoryIds = [...userStoryMap.values()]
-    .filter((item) => !item.name)
+    .filter((item) => !item.name && item.id !== USER_STORE_EMPTY_KEY)
     .map(({ id }) => id);
   const emptyUserStories = await getWorkItemsByIds(emptyUserStoryIds);
   emptyUserStories.forEach((item) => {

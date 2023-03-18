@@ -29,4 +29,5 @@ export function errorNotification(e: unknown) {
   } else {
     notificationObserver.broadcast('Api error');
   }
+  throw e;
 }

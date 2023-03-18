@@ -91,7 +91,7 @@ export function getDataFromWorkItem(item: WorkItem) {
   const workItemType: 'Task' | 'Bug' | 'User Story' | 'Feature' =
     item.fields['System.WorkItemType'];
 
-  const relationReverse = item.relations.find(
+  const relationReverse = item.relations?.find(
     (rel) => rel.rel === 'System.LinkTypes.Hierarchy-Reverse'
   );
 

@@ -55,6 +55,8 @@ export function DataLayer({
         workItems={workItems}
         typeReport={typeReport}
       />
+      <br />
+      <br />
       <UserStoryReport workItems={workItems} typeReport={typeReport} />
     </div>
   );

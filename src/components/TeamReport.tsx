@@ -20,9 +20,13 @@ const calcPercentageLoad = (
   item: Pick<TeamReportRow, 'capacity' | 'planEstimate'>
 ) => {
   if (item.capacity <= 0) return '-';
-  return `загружен на ${((item.planEstimate * 100) / item.capacity).toFixed(
-    0
-  )}%`;
+  const accuracy = (item.planEstimate * 100) / item.capacity - 100;
+
+  return accuracy === 0
+    ? `идеально`
+    : accuracy > 0
+    ? `перегружен на ${accuracy.toFixed(0)}%`
+    : `недогружен на ${-accuracy.toFixed(0)}%`;
 };
 
 const calcEstimationAccuracy = (

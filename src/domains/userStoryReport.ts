@@ -20,10 +20,12 @@ export type UserStoryReportItem = {
   planEstimate: number;
   /** Фактическая выработка, часы */
   complete: number;
-  /** Оставшаяся работа, часы */
-  remaining: number;
+  /** Оставшаяся работа из плановых, часы */
+  planRemaining: 0;
   /** Добавленная загрузка, часы */
   overplanEstimate: number;
+  /** Оставшаяся работа из внеплановых, часы */
+  overplanRemaining: 0;
   order: number;
 };
 
@@ -40,8 +42,9 @@ function createUserStoryReportItem(id: number): UserStoryReportItem {
     assignedToName: '',
     planEstimate: 0,
     complete: 0,
-    remaining: 0,
+    planRemaining: 0,
     overplanEstimate: 0,
+    overplanRemaining: 0,
     order: 0,
   };
 }
@@ -90,11 +93,12 @@ export async function getUserStoryReport({
       item.id = key;
       if (overplan) {
         item.overplanEstimate += originalEstimate;
+        item.overplanRemaining += remainingWork;
       } else {
         item.planEstimate += originalEstimate;
+        item.planRemaining += remainingWork;
       }
       item.complete += completedWork;
-      item.remaining += remainingWork;
     } else {
       createOrUpdateUserStoryMap(userStoryMap, workItem);
     }

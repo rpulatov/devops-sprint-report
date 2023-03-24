@@ -28,7 +28,8 @@ export function UserStoryReport({
           acc.complete += item.complete;
           acc.overplanEstimate += item.overplanEstimate;
           acc.planEstimate += item.planEstimate;
-          acc.remaining += item.remaining;
+          acc.planRemaining += item.planRemaining;
+          acc.overplanRemaining += item.overplanRemaining;
           acc.countClosed += item.isClosed ? 1 : 0;
           return acc;
         },
@@ -36,7 +37,8 @@ export function UserStoryReport({
           planEstimate: 0,
           complete: 0,
           overplanEstimate: 0,
-          remaining: 0,
+          planRemaining: 0,
+          overplanRemaining: 0,
           countClosed: 0,
         }
       ),
@@ -61,7 +63,10 @@ export function UserStoryReport({
               <th>Добавленная загрузка, часы</th>
             )}
             {typeReport === TypeReport.SprintResult && (
-              <th>Оставшаяся работа, часы</th>
+              <th>Оставшаяся работа по плановым, часы</th>
+            )}
+            {typeReport === TypeReport.SprintResult && (
+              <th>Оставшаяся работа по внеплановым, часы</th>
             )}
           </tr>
         </thead>
@@ -90,14 +95,17 @@ export function UserStoryReport({
                 <td>{item.overplanEstimate.toFixed(1)}</td>
               )}
               {typeReport === TypeReport.SprintResult && (
-                <td>{item.remaining.toFixed(1)}</td>
+                <td>{item.planRemaining.toFixed(1)}</td>
+              )}
+              {typeReport === TypeReport.SprintResult && (
+                <td>{item.overplanRemaining.toFixed(1)}</td>
               )}
             </tr>
           ))}
         </tbody>
         <tfoot>
           <tr>
-            <td>Итого</td>
+            <td>ИТОГО:</td>
             <td></td>
             {typeReport === TypeReport.SprintResult && <td></td>}
             <td></td>
@@ -110,7 +118,10 @@ export function UserStoryReport({
               <td>{total.overplanEstimate.toFixed(1)}</td>
             )}
             {typeReport === TypeReport.SprintResult && (
-              <td>{total.remaining.toFixed(1)}</td>
+              <td>{total.planRemaining.toFixed(1)}</td>
+            )}
+            {typeReport === TypeReport.SprintResult && (
+              <td>{total.overplanRemaining.toFixed(1)}</td>
             )}
           </tr>
         </tfoot>
@@ -126,6 +137,36 @@ export function UserStoryReport({
               <td className="userStoryNotClosed">Невыполнено из плановых</td>
               <td className="userStoryNotClosed">
                 {items.length - total.countClosed}
+              </td>
+            </tr>
+            <tr>
+              <td>Процент выполнения</td>
+              <td>
+                {items.length > 0
+                  ? `${((total.countClosed * 100) / items.length).toFixed(1)}%`
+                  : '-'}
+              </td>
+            </tr>
+            <tr>
+              <td>Процент выполнения плановых задач спринта</td>
+              <td>
+                {total.planEstimate > 0
+                  ? `${(
+                      (1 - total.planRemaining / total.planEstimate) *
+                      100
+                    ).toFixed(1)}%`
+                  : '-'}
+              </td>
+            </tr>
+            <tr>
+              <td>Процент выполнения внеплановых задач спринта</td>
+              <td>
+                {total.overplanEstimate > 0
+                  ? `${(
+                      (1 - total.overplanRemaining / total.overplanEstimate) *
+                      100
+                    ).toFixed(1)}%`
+                  : '-'}
               </td>
             </tr>
           </tbody>

@@ -230,11 +230,13 @@ export function TeamReport({
               <td>{total.overplanRemaining.toFixed(1)}</td>
             </>
           ) : null}
-          <td>{calcPercentageLoad(total)}</td>
+          <td className="noWrapColumn">{calcPercentageLoad(total)}</td>
           {typeReport === TypeReport.SprintResult ? (
             <>
-              <td>{calcEstimationAccuracy(total)}</td>
-              <td>{calcPercentageProductivity(total)}</td>
+              <td className="noWrapColumn">{calcEstimationAccuracy(total)}</td>
+              <td className="noWrapColumn">
+                {calcPercentageProductivity(total)}
+              </td>
             </>
           ) : null}
         </tr>

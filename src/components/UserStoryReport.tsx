@@ -85,7 +85,7 @@ export function UserStoryReport({
               <td>{item.name}</td>
               <td>{item.parentName}</td>
               {typeReport === TypeReport.SprintResult && <td>{item.state}</td>}
-              <td>{item.assignedToName}</td>
+              <td className="noWrapColumn">{item.assignedToName}</td>
 
               <td>{item.planEstimate.toFixed(1)}</td>
               {typeReport === TypeReport.SprintResult && (
@@ -104,7 +104,7 @@ export function UserStoryReport({
           ))}
         </tbody>
         <tfoot>
-          <tr>
+          <tr className="totalRow">
             <td>ИТОГО:</td>
             <td></td>
             {typeReport === TypeReport.SprintResult && <td></td>}

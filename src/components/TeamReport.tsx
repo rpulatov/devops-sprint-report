@@ -20,7 +20,9 @@ const calcPercentageLoad = (
   item: Pick<TeamReportRow, 'capacity' | 'planEstimate'>
 ) => {
   if (item.capacity <= 0) return '-';
-  return `${((item.planEstimate * 100) / item.capacity).toFixed(0)}%`;
+  return `загружен на ${((item.planEstimate * 100) / item.capacity).toFixed(
+    0
+  )}%`;
 };
 
 const calcEstimationAccuracy = (
@@ -180,7 +182,7 @@ export function TeamReport({
         {teamReport.map((item) => {
           return (
             <tr key={item.id}>
-              <td>{item.name}</td>
+              <td className="noWrapColumn">{item.name}</td>
               <td>{item.capacity.toFixed(1)}</td>
 
               <td>{item.planEstimate.toFixed(1)}</td>
@@ -206,7 +208,7 @@ export function TeamReport({
         })}
       </tbody>
       <tfoot>
-        <tr>
+        <tr className="totalRow">
           <td>ИТОГО:</td>
           <td>{total.capacity.toFixed(1)}</td>
           <td>{total.planEstimate.toFixed(1)}</td>

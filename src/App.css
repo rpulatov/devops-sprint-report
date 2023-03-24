@@ -14,3 +14,12 @@
 .userStoryNotClosed {
   background-color: #ff8f8f;
 }
+
+.noWrapColumn {
+  max-width: 100%;
+  white-space: nowrap;
+}
+
+.totalRow {
+  font-weight: bold;
+}

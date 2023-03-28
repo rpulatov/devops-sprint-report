@@ -4,6 +4,8 @@ import { TeamMember } from '../domains/teammembers';
 import { WorkItemState } from '../domains/workItems';
 import { TypeReport } from '../types/report';
 import { diffInDays } from '../utils';
+import { Table } from './tables/Table';
+import { TableColumn } from './tables/TableColumn';
 
 type TeamReportRow = {
   id: string;
@@ -134,91 +136,102 @@ export function TeamReport({
   );
 
   return (
-    <table>
-      <thead>
-        <tr>
-          <th>ФИО</th>
-          <th>Возможная загрузка, часы</th>
+    <Table data={teamReport}>
+      <TableColumn
+        name="name"
+        title="ФИО"
+        className="noWrapColumn"
+        renderFooter={() => 'ИТОГО:'}
+      />
+      <TableColumn
+        name="capacity"
+        title="Возможные часы"
+        type="number"
+        className="column-centered"
+        renderFooter={() => total.capacity.toFixed(1)}
+      />
+      <TableColumn
+        name="planEstimate"
+        title="Плановые часы"
+        type="number"
+        className="column-centered"
+        renderFooter={() => total.planEstimate.toFixed(1)}
+      />
+      {typeReport === TypeReport.SprintResult ? (
+        <>
+          <TableColumn
+            name="planComplete"
+            title="Фактические часы"
+            type="number"
+            className="column-centered"
+            renderFooter={() => total.planComplete.toFixed(1)}
+          />
+          <TableColumn
+            name="planRemaining"
+            title="Оставшиеся часы"
+            type="number"
+            className="column-centered"
+            renderFooter={() => total.planRemaining.toFixed(1)}
+          />
+          <TableColumn
+            name="overplanEstimate"
+            title="Добавленные задачи"
+            type="number"
+            className="column-centered"
+            renderFooter={() => total.overplanEstimate.toFixed(1)}
+          />
+          <TableColumn
+            name="overplanComplete"
+            title="Фактические часы по добавленным задачам"
+            type="number"
+            className="column-centered"
+            renderFooter={() => total.overplanComplete.toFixed(1)}
+          />
 
-          <th>Плановая загрузка, часы</th>
-          {typeReport === TypeReport.SprintResult ? (
-            <>
-              <th>Фактическая выработка по плановым задачам, часы</th>
-              <th>Оставшаяся работа по плановым задачам, часы</th>
+          <TableColumn
+            name="overplanRemaining"
+            title="Оставшиеся часы по добавленным задачам"
+            type="number"
+            className="column-centered"
+            renderFooter={() => total.overplanRemaining.toFixed(1)}
+          />
+          <TableColumn
+            title="Итоговая фактическая загрузка"
+            type="number"
+            className="column-centered"
+            render={(item: TeamReportRow) =>
+              (item.planComplete + item.overplanComplete).toFixed(1)
+            }
+            renderFooter={() =>
+              (total.planRemaining + total.overplanRemaining).toFixed(1)
+            }
+          />
+        </>
+      ) : null}
 
-              <th>Фактическая выработка по добавленным задачам, часы</th>
-              <th>Добавленная загрузка (по новым задачам), часы</th>
-              <th>Оставшаяяся работа по добавленным задачам, часы</th>
-            </>
-          ) : null}
-          <th>Процент плановой загрузки на спринт</th>
-          {typeReport === TypeReport.SprintResult ? (
-            <>
-              <th>Отклонения в оценке задач</th>
-              <th>Отклонения в выработке</th>
-            </>
-          ) : null}
-        </tr>
-      </thead>
-      <tbody>
-        {teamReport.map((item) => {
-          return (
-            <tr key={item.id}>
-              <td className="noWrapColumn">{item.name}</td>
-              <td>{item.capacity.toFixed(1)}</td>
+      <TableColumn
+        title="Плановая загрузка на спринт"
+        className="noWrapColumn"
+        render={calcPercentageLoad}
+        renderFooter={() => calcPercentageLoad(total)}
+      />
 
-              <td>{item.planEstimate.toFixed(1)}</td>
-              {typeReport === TypeReport.SprintResult ? (
-                <>
-                  <td>{item.planComplete.toFixed(1)}</td>
-                  <td>{item.planRemaining.toFixed(1)}</td>
-
-                  <td>{item.overplanComplete.toFixed(1)}</td>
-                  <td>{item.overplanEstimate.toFixed(1)}</td>
-                  <td>{item.overplanRemaining.toFixed(1)}</td>
-                </>
-              ) : null}
-              <td className="noWrapColumn">{calcPercentageLoad(item)}</td>
-              {typeReport === TypeReport.SprintResult ? (
-                <>
-                  <td className="noWrapColumn">
-                    {calcEstimationAccuracy(item)}
-                  </td>
-                  <td className="noWrapColumn">
-                    {calcPercentageProductivity(item)}
-                  </td>
-                </>
-              ) : null}
-            </tr>
-          );
-        })}
-      </tbody>
-      <tfoot>
-        <tr className="totalRow">
-          <td>ИТОГО:</td>
-          <td>{total.capacity.toFixed(1)}</td>
-          <td>{total.planEstimate.toFixed(1)}</td>
-          {typeReport === TypeReport.SprintResult ? (
-            <>
-              <td>{total.planComplete.toFixed(1)}</td>
-              <td>{total.planRemaining.toFixed(1)}</td>
-
-              <td>{total.overplanComplete.toFixed(1)}</td>
-              <td>{total.overplanEstimate.toFixed(1)}</td>
-              <td>{total.overplanRemaining.toFixed(1)}</td>
-            </>
-          ) : null}
-          <td className="noWrapColumn">{calcPercentageLoad(total)}</td>
-          {typeReport === TypeReport.SprintResult ? (
-            <>
-              <td className="noWrapColumn">{calcEstimationAccuracy(total)}</td>
-              <td className="noWrapColumn">
-                {calcPercentageProductivity(total)}
-              </td>
-            </>
-          ) : null}
-        </tr>
-      </tfoot>
-    </table>
+      {typeReport === TypeReport.SprintResult ? (
+        <>
+          <TableColumn
+            title="Отклонения в оценке задач"
+            className="noWrapColumn"
+            render={calcEstimationAccuracy}
+            renderFooter={() => calcEstimationAccuracy(total)}
+          />
+          <TableColumn
+            title="Отклонения в выработке"
+            className="noWrapColumn"
+            render={calcPercentageProductivity}
+            renderFooter={() => calcPercentageProductivity(total)}
+          />
+        </>
+      ) : null}
+    </Table>
   );
 }

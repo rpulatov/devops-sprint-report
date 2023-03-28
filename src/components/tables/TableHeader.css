@@ -1,0 +1,9 @@
+.table-header {
+  background-color: rgb(190, 190, 190);
+}
+
+.table-header th {
+  font-weight: normal;
+  text-align: center;
+  padding: 4px;
+}

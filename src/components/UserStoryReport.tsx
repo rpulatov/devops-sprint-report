@@ -5,6 +5,8 @@ import {
 } from '../domains/userStoryReport';
 import { WorkItemState } from '../domains/workItems';
 import { TypeReport } from '../types/report';
+import { Table } from './tables/Table';
+import { TableColumn } from './tables/TableColumn';
 
 type UserStoryReportProps = {
   workItems: WorkItemState[];
@@ -25,19 +27,22 @@ export function UserStoryReport({
     () =>
       items.reduce(
         (acc, item) => {
-          acc.complete += item.complete;
+          acc.planComplete += item.planComplete;
+          acc.overplanComplete += item.overplanComplete;
           acc.overplanEstimate += item.overplanEstimate;
           acc.planEstimate += item.planEstimate;
           acc.planRemaining += item.planRemaining;
           acc.overplanRemaining += item.overplanRemaining;
           acc.countClosed += item.isClosed ? 1 : 0;
+
           return acc;
         },
         {
           planEstimate: 0,
-          complete: 0,
-          overplanEstimate: 0,
+          planComplete: 0,
           planRemaining: 0,
+          overplanEstimate: 0,
+          overplanComplete: 0,
           overplanRemaining: 0,
           countClosed: 0,
         }
@@ -47,100 +52,90 @@ export function UserStoryReport({
 
   return (
     <>
-      <table>
-        <thead>
-          <tr>
-            <th>Цель спринта (User Story)</th>
-            <th>Функционал (Feature)</th>
-            {typeReport === TypeReport.SprintResult && <th>Статус</th>}
-            <th>Ответственный</th>
+      <Table data={items}>
+        <TableColumn
+          name="name"
+          title="Цель спринта (User Story)"
+          renderFooter={() => 'ИТОГО:'}
+        />
+        <TableColumn name="parentName" title="Функционал (Feature)" />
 
-            <th>Плановая загрузка, часы</th>
-            {typeReport === TypeReport.SprintResult && (
-              <th>Фактическая выработка, часы</th>
-            )}
-            {typeReport === TypeReport.SprintResult && (
-              <th>Добавленная загрузка, часы</th>
-            )}
-            {typeReport === TypeReport.SprintResult && (
-              <th>Оставшаяся работа по плановым, часы</th>
-            )}
-            {typeReport === TypeReport.SprintResult && (
-              <th>Оставшаяся работа по внеплановым, часы</th>
-            )}
-          </tr>
-        </thead>
-        <tbody>
-          {items.map((item) => (
-            <tr
-              key={item.id}
-              className={
-                typeReport === TypeReport.SprintPlan
-                  ? ''
-                  : item.isClosed
-                  ? 'userStoryClosed'
-                  : 'userStoryNotClosed'
-              }
-            >
-              <td>{item.name}</td>
-              <td>{item.parentName}</td>
-              {typeReport === TypeReport.SprintResult && <td>{item.state}</td>}
-              <td className="noWrapColumn">{item.assignedToName}</td>
+        {typeReport === TypeReport.SprintResult ? (
+          <TableColumn name="state" title="Статус" />
+        ) : null}
+        <TableColumn
+          name="assignedToName"
+          title="Ответственный"
+          className="noWrapColumn"
+        />
+        <TableColumn
+          name="planEstimate"
+          title="Плановые часы"
+          type="number"
+          className="column-centered"
+          renderFooter={() => total.planEstimate.toFixed(1)}
+        />
+        {typeReport === TypeReport.SprintResult ? (
+          <TableColumn
+            name="planComplete"
+            title="Фактические часы"
+            type="number"
+            className="column-centered"
+            renderFooter={() => total.planComplete.toFixed(1)}
+          />
+        ) : null}
+        {typeReport === TypeReport.SprintResult ? (
+          <TableColumn
+            name="planRemaining"
+            title="Оставшиеся часы"
+            type="number"
+            className="column-centered"
+            renderFooter={() => total.planRemaining.toFixed(1)}
+          />
+        ) : null}
+        {typeReport === TypeReport.SprintResult ? (
+          <TableColumn
+            name="overplanEstimate"
+            title="Добавленные задачи"
+            type="number"
+            className="column-centered"
+            renderFooter={() => total.overplanEstimate.toFixed(1)}
+          />
+        ) : null}
 
-              <td>{item.planEstimate.toFixed(1)}</td>
-              {typeReport === TypeReport.SprintResult && (
-                <td>{item.complete.toFixed(1)}</td>
-              )}
-              {typeReport === TypeReport.SprintResult && (
-                <td>{item.overplanEstimate.toFixed(1)}</td>
-              )}
-              {typeReport === TypeReport.SprintResult && (
-                <td>{item.planRemaining.toFixed(1)}</td>
-              )}
-              {typeReport === TypeReport.SprintResult && (
-                <td>{item.overplanRemaining.toFixed(1)}</td>
-              )}
-            </tr>
-          ))}
-        </tbody>
-        <tfoot>
-          <tr className="totalRow">
-            <td>ИТОГО:</td>
-            <td></td>
-            {typeReport === TypeReport.SprintResult && <td></td>}
-            <td></td>
+        {typeReport === TypeReport.SprintResult ? (
+          <TableColumn
+            name="overplanComplete"
+            title="Фактические часы по добавленным задачам"
+            type="number"
+            className="column-centered"
+            renderFooter={() => total.overplanComplete.toFixed(1)}
+          />
+        ) : null}
 
-            <td>{total.planEstimate.toFixed(1)}</td>
-            {typeReport === TypeReport.SprintResult && (
-              <td>{total.complete.toFixed(1)}</td>
-            )}
-            {typeReport === TypeReport.SprintResult && (
-              <td>{total.overplanEstimate.toFixed(1)}</td>
-            )}
-            {typeReport === TypeReport.SprintResult && (
-              <td>{total.planRemaining.toFixed(1)}</td>
-            )}
-            {typeReport === TypeReport.SprintResult && (
-              <td>{total.overplanRemaining.toFixed(1)}</td>
-            )}
-          </tr>
-        </tfoot>
-      </table>
+        {typeReport === TypeReport.SprintResult ? (
+          <TableColumn
+            name="overplanRemaining"
+            title="Оставшиеся часы по добавленным задачам"
+            type="number"
+            className="column-centered"
+            renderFooter={() => total.overplanRemaining.toFixed(1)}
+          />
+        ) : null}
+      </Table>
       {typeReport === TypeReport.SprintResult && (
         <table>
           <tbody>
             <tr>
-              <td className="userStoryClosed">Выполнено из плановых</td>
-              <td className="userStoryClosed">{total.countClosed}</td>
+              <td>Выполнено из плановых</td>
+              <td>{total.countClosed}</td>
             </tr>
             <tr>
-              <td className="userStoryNotClosed">Невыполнено из плановых</td>
-              <td className="userStoryNotClosed">
-                {items.length - total.countClosed}
-              </td>
+              <td>Невыполнено из плановых</td>
+              <td>{items.length - total.countClosed}</td>
             </tr>
             <tr>
-              <td>Процент выполнения</td>
+              <td>Процент выполнения (по количеству User Story)</td>
               <td>
                 {items.length > 0
                   ? `${((total.countClosed * 100) / items.length).toFixed(1)}%`
@@ -148,7 +143,9 @@ export function UserStoryReport({
               </td>
             </tr>
             <tr>
-              <td>Процент выполнения плановых задач спринта</td>
+              <td>
+                Процент выполнения плановых задач спринта (по количеству часов)
+              </td>
               <td>
                 {total.planEstimate > 0
                   ? `${(
@@ -159,7 +156,10 @@ export function UserStoryReport({
               </td>
             </tr>
             <tr>
-              <td>Процент выполнения внеплановых задач спринта</td>
+              <td>
+                Процент выполнения внеплановых задач спринта (по количеству
+                часов)
+              </td>
               <td>
                 {total.overplanEstimate > 0
                   ? `${(

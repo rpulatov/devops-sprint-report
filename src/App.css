@@ -20,6 +20,6 @@
   white-space: nowrap;
 }
 
-.totalRow {
-  font-weight: bold;
+.column-centered {
+  text-align: center;
 }

@@ -1,6 +1,7 @@
 import { TeamSettingsIteration } from 'azure-devops-extension-api/Work';
 import { useCallback, useMemo } from 'react';
-import { useCapacity } from '../hooks/useCapacity';
+import { useTeamMembers } from '../hooks/useTeamMembers';
+
 import { useWorkItems } from '../hooks/useWorkItems';
 import { TypeReport } from '../types/report';
 
@@ -20,10 +21,10 @@ export function DataLayer({
   iteration,
   typeReport,
 }: DataLayerProps) {
-  const { teamMembers, teamDaysOff } = useCapacity({
+  const { teamMembers } = useTeamMembers({
+    iteration,
     projectId,
     teamId,
-    iterationId: iteration.id,
   });
 
   const { workItems } = useWorkItems({
@@ -32,26 +33,10 @@ export function DataLayer({
     iterationPath: iteration.path,
   });
 
-  const iterationDays = useMemo(() => {
-    const countTeamDaysOff = teamDaysOff.reduce(
-      (acc, value) => acc + (diffInDays(value.start, value.end) ?? 0),
-      0
-    );
-
-    const countIterationDays =
-      diffInDays(
-        iteration.attributes.finishDate,
-        iteration.attributes.startDate
-      ) ?? 0;
-
-    return countIterationDays - countTeamDaysOff;
-  }, [iteration, teamDaysOff]);
-
   return (
     <div>
       <TeamReport
         teamMembers={teamMembers}
-        iterationDays={iterationDays}
         workItems={workItems}
         typeReport={typeReport}
       />

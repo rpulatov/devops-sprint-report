@@ -1,6 +1,7 @@
 import { fetchAzure } from '../api';
 import {
   TeamMemberCapacity,
+  TeamSetting,
   TeamSettingsDaysOff,
 } from 'azure-devops-extension-api/Work';
 
@@ -32,4 +33,25 @@ export async function getTeamDaysOff({
       teamId,
     }
   ).then((res: TeamSettingsDaysOff) => res);
+}
+
+const days = [
+  'sunday',
+  'monday',
+  'tuesday',
+  'wednesday',
+  'thursday',
+  'friday',
+  'saturday',
+];
+
+export type GetTeamSettings = {
+  projectId: string;
+};
+export async function getTeamSettings({ projectId }: GetTeamSettings) {
+  return fetchAzure(`/work/teamsettings`, {
+    projectId,
+  }).then((res: { workingDays: Array<string> }) =>
+    res.workingDays.map((item) => days.indexOf(item))
+  );
 }

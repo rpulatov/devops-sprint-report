@@ -1,5 +1,6 @@
 import { TeamMemberCapacity } from 'azure-devops-extension-api/Work';
 import { useMemo, useCallback } from 'react';
+import { TeamMember } from '../domains/teammembers';
 import { WorkItemState } from '../domains/workItems';
 import { TypeReport } from '../types/report';
 import { diffInDays } from '../utils';
@@ -58,41 +59,18 @@ const calcPercentageProductivity = (
 };
 
 type TeamReportProps = {
-  teamMembers: TeamMemberCapacity[];
-  iterationDays: number;
+  teamMembers: TeamMember[];
   workItems: WorkItemState[];
   typeReport: TypeReport;
 };
 
 export function TeamReport({
   teamMembers,
-  iterationDays,
   workItems,
   typeReport,
 }: TeamReportProps) {
-  const teamCapacity = useMemo(() => {
-    return teamMembers.map((item) => {
-      const daysOff = item.daysOff.reduce(
-        (acc, value) => acc + (diffInDays(value.start, value.end) ?? 0),
-        0
-      );
-
-      const allCapacityPerDay = item.activities.reduce(
-        (acc, value) => acc + value.capacityPerDay,
-        0
-      );
-
-      return {
-        id: item.teamMember.id,
-        name: item.teamMember.displayName,
-        capacity: (iterationDays - daysOff) * allCapacityPerDay,
-        workDays: iterationDays - daysOff,
-      };
-    });
-  }, [teamMembers, iterationDays]);
-
   const teamReport = useMemo(() => {
-    const teamReportObj = teamCapacity.reduce(
+    const teamReportObj = teamMembers.reduce(
       (acc: { [key: string]: TeamReportRow }, item) => {
         if (item.capacity > 0)
           acc[item.id] = {
@@ -124,7 +102,7 @@ export function TeamReport({
     }
 
     return Object.values(teamReportObj);
-  }, [workItems, teamCapacity]);
+  }, [workItems, teamMembers]);
 
   const total = useMemo(
     () =>

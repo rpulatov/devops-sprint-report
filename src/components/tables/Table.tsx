@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { TableColumn, TableColumnProps, TableColumnType } from './TableColumn';
+import { TableColumnProps, TableColumnType } from './TableColumn';
 import { TableContainer } from './TableContainer';
 import { TableFooter } from './TableFooter';
 import { TableHeader } from './TableHeader';
@@ -30,9 +30,15 @@ export function Table<T extends TableDefaultDataType>({
     React.Children.forEach(children, (el, index) => {
       if (el) {
         if (el.props.children) {
-          el.props.children.forEach((el2) => {
-            res.push({ key: el2.props.name + el2.props.title, ...el2.props });
-          });
+          if (Array.isArray(el.props.children)) {
+            el.props.children.forEach((el2) => {
+              res.push({ key: el2.props.name + el2.props.title, ...el2.props });
+            });
+          } else
+            res.push({
+              key: el.props.children.props.name + el.props.children.props.title,
+              ...el.props.children.props,
+            });
         } else res.push({ key: el.props.name + el.props.title, ...el.props });
       }
     });

@@ -7,7 +7,7 @@ import { TableHeader } from './TableHeader';
 import { TableRow } from './TableRow';
 
 type TableDefaultDataType = {
-  [key: string]: string | number | undefined | null;
+  [key: string]: string | number | undefined | null | boolean;
 };
 
 type TableColumnsItem<T> = TableColumnProps<T> & { key: string };

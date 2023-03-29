@@ -68,7 +68,7 @@ export function Table<T extends TableDefaultDataType>({
       </TableHeader>
       <tbody>
         {data.map((item, i) => (
-          <TableRow key={getValueFormat(item, keyId) || i}>
+          <TableRow key={String(getValueFormat(item, keyId)) || i}>
             {columns.map((col) => (
               <td key={col.key} className={col.className}>
                 {col.render

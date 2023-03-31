@@ -203,7 +203,7 @@ export function TeamReport({
               (item.planComplete + item.overplanComplete).toFixed(1)
             }
             renderFooter={() =>
-              (total.planRemaining + total.overplanRemaining).toFixed(1)
+              (total.planComplete + total.overplanComplete).toFixed(1)
             }
           />
         </>

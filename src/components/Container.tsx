@@ -1,5 +1,3 @@
-import { useCallback } from 'react';
-import XLSX from 'xlsx';
 import { TeamSettingsIteration } from 'azure-devops-extension-api/Work';
 import { useTeamMembers } from '../hooks/useTeamMembers';
 
@@ -10,7 +8,6 @@ import { TypeReport } from '../types/report';
 import { TeamReport } from './TeamReport';
 import { UserStoryReport } from './UserStoryReport';
 import { FeatureReport } from './FeatureReport';
-import { tableToExcel } from './tables/excel';
 
 type ContainerProps = {
   projectId: string;
@@ -38,25 +35,8 @@ export function Container({
 
   const { userStories } = useUserStories({ workItems });
 
-  const exportToExcel = useCallback(() => {
-    const wb = XLSX.utils.book_new();
-
-    const ws1 = XLSX.utils.table_to_sheet(
-      document.querySelector('#team-report')
-    );
-    XLSX.utils.book_append_sheet(wb, ws1, 'Отчет по команде');
-
-    const ws2 = XLSX.utils.table_to_sheet(
-      document.querySelector('#user-story-report')
-    );
-    XLSX.utils.book_append_sheet(wb, ws2, 'User Story');
-
-    XLSX.writeFile(wb, 'sprint.xlsx');
-  }, []);
-
   return (
     <div>
-      <button onClick={exportToExcel}>Export to Excel</button>
       <TeamReport
         teamMembers={teamMembers}
         workItems={workItems}

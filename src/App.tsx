@@ -1,10 +1,6 @@
 import React, { useCallback, useState } from 'react';
 
-import { Page } from 'azure-devops-ui/Page';
-import { Card } from 'azure-devops-ui/Card';
-
-import './App.css';
-
+import * as XLSX from 'xlsx';
 import { SelectProject } from './components/SelectProject';
 import {
   TeamProjectReference,
@@ -16,6 +12,8 @@ import { SelectTeam } from './components/SelectTeams';
 import { Container } from './components/Container';
 import { NotificationLayer } from './components/NotificationLayer';
 import { TypeReport } from './types/report';
+
+import './App.css';
 
 function App() {
   const [currentProject, setCurrentProject] =
@@ -34,6 +32,43 @@ function App() {
       setTypeReport(e.target.value as TypeReport),
     []
   );
+
+  const exportToExcel = useCallback(() => {
+    const wb = XLSX.utils.book_new();
+
+    const ws1 = XLSX.utils.table_to_sheet(
+      document.querySelector('#sprint-title')
+    );
+
+    const ws11 = XLSX.utils.table_to_sheet(
+      document.querySelector('#team-report')
+    );
+
+    const dataTeamReport = XLSX.utils.sheet_to_json<{ [key: string]: string }>(
+      ws11,
+      { header: 1, blankrows: false }
+    );
+
+    const aoaTeamReport = dataTeamReport.map(Object.values);
+
+    XLSX.utils.sheet_add_aoa(ws1, aoaTeamReport, { origin: 5 });
+
+    XLSX.utils.book_append_sheet(wb, ws1, 'Отчет по команде');
+
+    const ws2 = XLSX.utils.table_to_sheet(
+      document.querySelector('#user-story-report')
+    );
+    XLSX.utils.book_append_sheet(wb, ws2, 'User Story');
+
+    const ws3 = XLSX.utils.table_to_sheet(
+      document.querySelector('#feature-report')
+    );
+    XLSX.utils.book_append_sheet(wb, ws3, 'Feature');
+
+    XLSX.writeFile(wb, 'sprint.xlsx');
+  }, []);
+
+  const colSpanTitleForTeamReport = 12;
 
   return (
     <div className="mainPage">
@@ -58,40 +93,53 @@ function App() {
         </>
       ) : null}
 
-      <p>
-        <span>Наименование проекта: {currentProject?.name}</span>
-      </p>
-      <p>
-        <span>
-          {typeReport === TypeReport.SprintPlan
-            ? 'План спринта:'
-            : 'Результат спринта:'}{' '}
-          {currentIteration?.name}
-        </span>
-      </p>
-      <p>
-        <span>
-          Период с:{' '}
-          {currentIteration?.attributes?.startDate
-            ? new Date(
-                currentIteration?.attributes?.startDate
-              ).toLocaleDateString('ru-RU')
-            : ''}{' '}
-          по{' '}
-          {currentIteration?.attributes?.finishDate
-            ? new Date(
-                currentIteration?.attributes?.finishDate
-              ).toLocaleDateString('ru-RU')
-            : ''}
-        </span>
-      </p>
+      <table id="sprint-title">
+        <thead>
+          <tr>
+            <td>Наименование проекта:</td>
+            <td colSpan={colSpanTitleForTeamReport}>{currentProject?.name}</td>
+          </tr>
+          <tr>
+            <td>
+              {typeReport === TypeReport.SprintPlan
+                ? 'План спринта:'
+                : 'Результат спринта:'}
+            </td>
+            <td colSpan={colSpanTitleForTeamReport}>
+              {currentIteration?.name}
+            </td>
+          </tr>
+          <tr>
+            <td>Период:</td>
+            <td colSpan={colSpanTitleForTeamReport}>
+              {currentIteration?.attributes?.startDate
+                ? new Date(
+                    currentIteration?.attributes?.startDate
+                  ).toLocaleDateString('ru-RU')
+                : ''}{' '}
+              {' - '}
+              {currentIteration?.attributes?.finishDate
+                ? new Date(
+                    currentIteration?.attributes?.finishDate
+                  ).toLocaleDateString('ru-RU')
+                : ''}
+            </td>
+          </tr>
+        </thead>
+      </table>
+
       {currentProject && currentTeam && currentIteration ? (
-        <Container
-          projectId={currentProject.id}
-          teamId={currentTeam.id}
-          iteration={currentIteration}
-          typeReport={typeReport}
-        />
+        <>
+          <p>
+            <button onClick={exportToExcel}>Export to Excel</button>
+          </p>
+          <Container
+            projectId={currentProject.id}
+            teamId={currentTeam.id}
+            iteration={currentIteration}
+            typeReport={typeReport}
+          />
+        </>
       ) : null}
       <NotificationLayer />
     </div>

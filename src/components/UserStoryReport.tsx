@@ -169,6 +169,17 @@ export function UserStoryReport({
                   : '-'}
               </td>
             </tr>
+            <tr>
+              <td>Доля внеплановых задач (по количеству часов)</td>
+              <td>
+                {total.overplanComplete > 0
+                  ? `${(
+                      (total.overplanComplete * 100) /
+                      (total.planComplete + total.overplanComplete)
+                    ).toFixed(1)}%`
+                  : '-'}
+              </td>
+            </tr>
           </tbody>
         </table>
       )}

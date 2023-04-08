@@ -206,6 +206,27 @@ export function TeamReport({
               (total.planComplete + total.overplanComplete).toFixed(1)
             }
           />
+          <TableColumn
+            title="Доля внеплановых задач"
+            type="number"
+            className="column-centered"
+            render={(item: TeamReportRow) =>
+              item.planComplete + item.overplanComplete > 0
+                ? (
+                    (item.overplanComplete * 100) /
+                    (item.planComplete + item.overplanComplete)
+                  ).toFixed(1) + '%'
+                : '-'
+            }
+            renderFooter={() =>
+              total.planComplete + total.overplanComplete > 0
+                ? (
+                    (total.overplanComplete * 100) /
+                    (total.planComplete + total.overplanComplete)
+                  ).toFixed(1) + '%'
+                : '-'
+            }
+          />
         </>
       ) : null}
 

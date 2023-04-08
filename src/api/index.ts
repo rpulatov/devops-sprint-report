@@ -1,6 +1,8 @@
 let PAT = import.meta.env.VITE_PAT;
 
+if (!PAT) PAT = localStorage.getItem('t');
 if (!PAT) PAT = prompt('Введите Personal Access Token Azure DevOps');
+if (PAT) localStorage.setItem('t', PAT);
 
 const TOKEN = btoa(`${PAT}:${PAT}`);
 const API_URL = 'https://dev.azure.com';

@@ -25,8 +25,13 @@ function createFeatureReportItem(id: number, name: string): FeatureReportItem {
 type FeatureReportProps = {
   userStories: UserStoryReportItem[];
   typeReport: TypeReport;
+  htmlIdElement: string;
 };
-export function FeatureReport({ userStories, typeReport }: FeatureReportProps) {
+export function FeatureReport({
+  userStories,
+  typeReport,
+  htmlIdElement,
+}: FeatureReportProps) {
   const features = useMemo(() => {
     const featuresMap = userStories.reduce((map, item) => {
       if (!item.parentWorkItemId) return map;
@@ -64,7 +69,7 @@ export function FeatureReport({ userStories, typeReport }: FeatureReportProps) {
   );
 
   return (
-    <Table data={features}>
+    <Table data={features} htmlIdElement={htmlIdElement}>
       <TableColumn
         name="name"
         title="Функционал (Feature)"

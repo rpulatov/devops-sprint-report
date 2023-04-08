@@ -14,6 +14,7 @@ type TableColumnsItem<T> = TableColumnProps<T> & { key: string };
 
 export type TableProps<T extends TableDefaultDataType> = {
   keyId?: string;
+  htmlIdElement: string;
   data: Array<T>;
   children:
     | React.ReactElement<TableColumnProps<T>>
@@ -22,6 +23,7 @@ export type TableProps<T extends TableDefaultDataType> = {
 };
 export function Table<T extends TableDefaultDataType>({
   keyId = 'id',
+  htmlIdElement,
   children,
   data,
 }: TableProps<T>) {
@@ -56,7 +58,7 @@ export function Table<T extends TableDefaultDataType>({
     []
   );
   return (
-    <TableContainer>
+    <TableContainer htmlIdElement={htmlIdElement}>
       <TableHeader>
         <TableRow>
           {columns.map((col) => (

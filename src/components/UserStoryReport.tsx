@@ -7,10 +7,12 @@ import { TableColumn } from './tables/TableColumn';
 type UserStoryReportProps = {
   userStories: UserStoryReportItem[];
   typeReport: TypeReport;
+  htmlIdElement: string;
 };
 export function UserStoryReport({
   userStories,
   typeReport,
+  htmlIdElement,
 }: UserStoryReportProps) {
   const total = useMemo(
     () =>
@@ -41,7 +43,7 @@ export function UserStoryReport({
 
   return (
     <>
-      <Table data={userStories}>
+      <Table data={userStories} htmlIdElement={htmlIdElement}>
         <TableColumn
           name="name"
           title="Цель спринта (User Story)"

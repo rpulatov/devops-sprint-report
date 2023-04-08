@@ -64,12 +64,14 @@ type TeamReportProps = {
   teamMembers: TeamMember[];
   workItems: WorkItemState[];
   typeReport: TypeReport;
+  htmlIdElement: string;
 };
 
 export function TeamReport({
   teamMembers,
   workItems,
   typeReport,
+  htmlIdElement,
 }: TeamReportProps) {
   const teamReport = useMemo(() => {
     const teamReportObj = teamMembers.reduce(
@@ -136,7 +138,7 @@ export function TeamReport({
   );
 
   return (
-    <Table data={teamReport}>
+    <Table data={teamReport} htmlIdElement={htmlIdElement}>
       <TableColumn
         name="name"
         title="ФИО"

@@ -82,28 +82,24 @@ export async function getUserStoryReport({
       remainingWork,
     } = workItem;
 
-    if (['Task', 'Bug'].includes(workItemType)) {
-      const key = parentWorkItemId || USER_STORE_EMPTY_KEY;
-
-      if (key === USER_STORE_EMPTY_KEY) {
-        console.log(workItem);
-      }
-
-      const item = userStoryMap.get(key) || createUserStoryReportItem(key);
-      userStoryMap.set(key, item);
-
-      item.id = key;
-      if (overplan) {
-        item.overplanEstimate += originalEstimate;
-        item.overplanRemaining += remainingWork;
-        item.overplanComplete += completedWork;
-      } else {
-        item.planEstimate += originalEstimate;
-        item.planRemaining += remainingWork;
-        item.planComplete += completedWork;
-      }
-    } else {
+    if (!['Task', 'Bug'].includes(workItemType)) {
       createOrUpdateUserStoryMap(userStoryMap, workItem);
+      continue;
+    }
+    const key = parentWorkItemId || USER_STORE_EMPTY_KEY;
+
+    const item = userStoryMap.get(key) || createUserStoryReportItem(key);
+    userStoryMap.set(key, item);
+
+    item.id = key;
+    if (overplan) {
+      item.overplanEstimate += originalEstimate;
+      item.overplanRemaining += remainingWork;
+      item.overplanComplete += completedWork;
+    } else {
+      item.planEstimate += originalEstimate;
+      item.planRemaining += remainingWork;
+      item.planComplete += completedWork;
     }
   }
 

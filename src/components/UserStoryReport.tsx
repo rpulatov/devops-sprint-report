@@ -1,31 +1,20 @@
-import { useMemo, useEffect, useState } from 'react';
-import {
-  getUserStoryReport,
-  UserStoryReportItem,
-} from '../domains/userStoryReport';
-import { WorkItemState } from '../domains/workItems';
+import { useMemo } from 'react';
+import { UserStoryReportItem } from '../domains/userStoryReport';
 import { TypeReport } from '../types/report';
 import { Table } from './tables/Table';
 import { TableColumn } from './tables/TableColumn';
 
 type UserStoryReportProps = {
-  workItems: WorkItemState[];
+  userStories: UserStoryReportItem[];
   typeReport: TypeReport;
 };
 export function UserStoryReport({
-  workItems,
+  userStories,
   typeReport,
 }: UserStoryReportProps) {
-  const [items, setItems] = useState<UserStoryReportItem[]>([]);
-
-  useEffect(() => {
-    setItems([]);
-    getUserStoryReport({ workItems }).then(setItems);
-  }, [workItems]);
-
   const total = useMemo(
     () =>
-      items.reduce(
+      userStories.reduce(
         (acc, item) => {
           acc.planComplete += item.planComplete;
           acc.overplanComplete += item.overplanComplete;
@@ -47,12 +36,12 @@ export function UserStoryReport({
           countClosed: 0,
         }
       ),
-    [items]
+    [userStories]
   );
 
   return (
     <>
-      <Table data={items}>
+      <Table data={userStories}>
         <TableColumn
           name="name"
           title="Цель спринта (User Story)"
@@ -132,13 +121,15 @@ export function UserStoryReport({
             </tr>
             <tr>
               <td>Невыполнено из плановых</td>
-              <td>{items.length - total.countClosed}</td>
+              <td>{userStories.length - total.countClosed}</td>
             </tr>
             <tr>
               <td>Процент выполнения (по количеству User Story)</td>
               <td>
-                {items.length > 0
-                  ? `${((total.countClosed * 100) / items.length).toFixed(1)}%`
+                {userStories.length > 0
+                  ? `${((total.countClosed * 100) / userStories.length).toFixed(
+                      1
+                    )}%`
                   : '-'}
               </td>
             </tr>
@@ -186,13 +177,3 @@ export function UserStoryReport({
     </>
   );
 }
-
-// user story
-// -- наименование
-// -- название фичи
-// -- статус
-// -- ответственный
-// -- Плановая загрузка, часы
-// -- Фактическая выработка, часы
-// -- Добавленная загрузка, часы
-// -- Оставшаяся работа, часы

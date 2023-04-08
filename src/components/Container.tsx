@@ -1,26 +1,26 @@
 import { TeamSettingsIteration } from 'azure-devops-extension-api/Work';
-import { useCallback, useMemo } from 'react';
 import { useTeamMembers } from '../hooks/useTeamMembers';
 
 import { useWorkItems } from '../hooks/useWorkItems';
+import { useUserStories } from '../hooks/useUserStories';
 import { TypeReport } from '../types/report';
 
-import { diffInDays } from '../utils';
 import { TeamReport } from './TeamReport';
 import { UserStoryReport } from './UserStoryReport';
+import { FeatureReport } from './FeatureReport';
 
-type DataLayerProps = {
+type ContainerProps = {
   projectId: string;
   teamId: string;
   iteration: TeamSettingsIteration;
   typeReport: TypeReport;
 };
-export function DataLayer({
+export function Container({
   projectId,
   teamId,
   iteration,
   typeReport,
-}: DataLayerProps) {
+}: ContainerProps) {
   const { teamMembers } = useTeamMembers({
     iteration,
     projectId,
@@ -33,6 +33,7 @@ export function DataLayer({
     iterationPath: iteration.path,
   });
 
+  const { userStories } = useUserStories({ workItems });
   return (
     <div>
       <TeamReport
@@ -42,7 +43,10 @@ export function DataLayer({
       />
       <br />
       <br />
-      <UserStoryReport workItems={workItems} typeReport={typeReport} />
+      <UserStoryReport userStories={userStories} typeReport={typeReport} />
+      <br />
+      <br />
+      <FeatureReport userStories={userStories} typeReport={typeReport} />
     </div>
   );
 }

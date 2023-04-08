@@ -13,7 +13,7 @@ import {
 import { SelectIteration } from './components/SelectIteration';
 import { TeamSettingsIteration } from 'azure-devops-extension-api/Work';
 import { SelectTeam } from './components/SelectTeams';
-import { DataLayer } from './components/DataLayer';
+import { Container } from './components/Container';
 import { NotificationLayer } from './components/NotificationLayer';
 import { TypeReport } from './types/report';
 
@@ -86,7 +86,7 @@ function App() {
         </span>
       </p>
       {currentProject && currentTeam && currentIteration ? (
-        <DataLayer
+        <Container
           projectId={currentProject.id}
           teamId={currentTeam.id}
           iteration={currentIteration}

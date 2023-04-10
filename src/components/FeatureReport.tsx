@@ -32,7 +32,13 @@ export function FeatureReport({
   typeReport,
   htmlIdElement,
 }: FeatureReportProps) {
-  const features = useMemo(() => {
+  const { data, total } = useMemo(() => {
+    const total = {
+      planEstimate: 0,
+      planComplete: 0,
+      overplanComplete: 0,
+    };
+
     const featuresMap = userStories.reduce((map, item) => {
       if (!item.parentWorkItemId) return map;
       const feature: FeatureReportItem =
@@ -43,38 +49,62 @@ export function FeatureReport({
       feature.planComplete += item.planComplete;
       feature.overplanComplete += item.overplanComplete;
 
+      total.planEstimate += item.planEstimate;
+      total.planComplete += item.planComplete;
+      total.overplanComplete += item.overplanComplete;
+
       map.set(feature.id, feature);
 
       return map;
     }, new Map<number, FeatureReportItem>());
-    return [...featuresMap.values()];
+
+    const data = [...featuresMap.values()].map((feature) => ({
+      id: feature.id,
+      name: feature.name,
+      planEstimate: feature.planEstimate,
+      planEstimateInPerc:
+        total.planEstimate > 0
+          ? ((feature.planEstimate * 100) / total.planEstimate).toFixed(1) + '%'
+          : '-',
+      complete: feature.planComplete + feature.overplanComplete,
+      completeInPerc:
+        total.planComplete + total.overplanComplete > 0
+          ? (
+              ((feature.planComplete + feature.overplanComplete) * 100) /
+              (total.planComplete + total.overplanComplete)
+            ).toFixed(1) + '%'
+          : '-',
+    }));
+
+    data.sort((a, b) => b.planEstimate - a.planEstimate);
+
+    return {
+      data,
+      total,
+    };
   }, [userStories]);
 
-  const total = useMemo(
-    () =>
-      userStories.reduce(
-        (acc, item) => {
-          acc.planEstimate += item.planEstimate;
-          acc.planComplete += item.planComplete;
-          acc.overplanComplete += item.overplanComplete;
-          return acc;
-        },
-        {
-          planEstimate: 0,
-          planComplete: 0,
-          overplanComplete: 0,
-        }
-      ),
-    [userStories]
-  );
-
   return (
-    <Table data={features} htmlIdElement={htmlIdElement}>
+    <Table data={data} htmlIdElement={htmlIdElement}>
       <TableColumn
         name="name"
         title="Функционал (Feature)"
         renderFooter={() => 'ИТОГО:'}
       />
+      <TableColumn
+        name="planEstimateInPerc"
+        title="Плановые часы в %"
+        className="column-centered"
+        renderFooter={() => '100%'}
+      />
+      {typeReport === TypeReport.SprintResult ? (
+        <TableColumn
+          name="completeInPerc"
+          title="Фактические часы в %"
+          className="column-centered"
+          renderFooter={() => '100%'}
+        />
+      ) : null}
       <TableColumn
         name="planEstimate"
         title="Плановые часы"
@@ -84,13 +114,10 @@ export function FeatureReport({
       />
       {typeReport === TypeReport.SprintResult ? (
         <TableColumn
-          name="planComplete"
+          name="complete"
           title="Фактические часы"
           type="number"
           className="column-centered"
-          render={(item: FeatureReportItem) =>
-            item.planComplete + item.overplanComplete
-          }
           renderFooter={() =>
             (total.planComplete + total.overplanComplete).toFixed(1)
           }

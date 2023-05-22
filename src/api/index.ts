@@ -1,12 +1,34 @@
 let PAT = import.meta.env.VITE_PAT;
 
-if (!PAT) PAT = localStorage.getItem('t');
-if (!PAT) PAT = prompt('Введите Personal Access Token Azure DevOps');
-if (PAT) localStorage.setItem('t', PAT);
+if (!PAT) PAT = getPAT();
+if (!PAT) PAT = requestAuth();
+if (PAT) saveAuth(PAT);
 
-const TOKEN = btoa(`${PAT}:${PAT}`);
+let TOKEN = '';
 const API_URL = 'https://dev.azure.com';
 const ORG_NAME = 'solution-factory';
+
+updateAuthToken(PAT);
+
+function getPAT() {
+  return localStorage.getItem('t');
+}
+
+export function isAuth() {
+  return !!getPAT();
+}
+
+export function requestAuth() {
+  return prompt('Введите Personal Access Token Azure DevOps');
+}
+
+export function saveAuth(PAT: string) {
+  localStorage.setItem('t', PAT);
+}
+
+export function updateAuthToken(PAT: string) {
+  TOKEN = btoa(`${PAT}:${PAT}`);
+}
 
 export function fetchAzure(
   url: string,

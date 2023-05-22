@@ -14,6 +14,7 @@ import { NotificationLayer } from './components/NotificationLayer';
 import { TypeReport } from './types/report';
 
 import './App.css';
+import { LogoutButton } from './components/LogoutButton';
 
 function App() {
   const [currentProject, setCurrentProject] =
@@ -71,27 +72,37 @@ function App() {
   const colSpanTitleForTeamReport = 12;
 
   return (
-    <div className="mainPage">
-      <SelectProject
-        onSelect={(data) => {
-          setCurrentIteration(null);
-          setCurrentTeam(null);
-          setCurrentProject(data);
-        }}
-      />
-      {currentProject ? (
-        <>
-          <SelectIteration
-            projectId={currentProject.id}
-            onSelect={setCurrentIteration}
+    <div className="container">
+      <div className="header">
+        <div className="header-filter">
+          <SelectProject
+            onSelect={(data) => {
+              setCurrentIteration(null);
+              setCurrentTeam(null);
+              setCurrentProject(data);
+            }}
           />
-          <SelectTeam projectId={currentProject.id} onSelect={setCurrentTeam} />
-          <select onChange={onChangeReport}>
-            <option value={TypeReport.SprintPlan}>План спринта</option>
-            <option value={TypeReport.SprintResult}>Результат спринта</option>
-          </select>
-        </>
-      ) : null}
+          {currentProject ? (
+            <>
+              <SelectIteration
+                projectId={currentProject.id}
+                onSelect={setCurrentIteration}
+              />
+              <SelectTeam
+                projectId={currentProject.id}
+                onSelect={setCurrentTeam}
+              />
+              <select onChange={onChangeReport}>
+                <option value={TypeReport.SprintPlan}>План спринта</option>
+                <option value={TypeReport.SprintResult}>
+                  Результат спринта
+                </option>
+              </select>
+            </>
+          ) : null}
+        </div>
+        <LogoutButton />
+      </div>
 
       <table id="sprint-title">
         <thead>

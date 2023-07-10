@@ -2,8 +2,15 @@ import { TeamFieldValues } from 'azure-devops-extension-api/Work';
 import {
   WorkItem,
   WorkItemQueryResult,
+  WorkItemType,
 } from 'azure-devops-extension-api/WorkItemTracking/WorkItemTracking';
 import { fetchAzure } from '../api';
+
+export async function getWorkItemTypes({ projectId }: { projectId: string }) {
+  return fetchAzure(`/wit/workitemtypes`, {
+    projectId,
+  }).then((res: WorkItemType[]) => res);
+}
 
 type GetTeamFieldValues = {
   projectId: string;
@@ -150,5 +157,9 @@ export async function getWorkItemsByIteration({
     teamId,
     query,
   });
+
+  const workItemTypes = await getWorkItemTypes({ projectId });
+  console.log(workItemTypes);
+
   return workItemsRaw.map(getDataFromWorkItem);
 }

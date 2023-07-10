@@ -2,7 +2,7 @@ import { TeamSettingsIteration } from 'azure-devops-extension-api/Work';
 import { useTeamMembers } from '../hooks/useTeamMembers';
 
 import { useWorkItems } from '../hooks/useWorkItems';
-import { useUserStories } from '../hooks/useUserStories';
+import { useUserStoryReport } from '../hooks/useUserStoryReport';
 import { TypeReport } from '../types/report';
 
 import { TeamReport } from './TeamReport';
@@ -33,7 +33,7 @@ export function Container({
     iterationPath: iteration.path,
   });
 
-  const { userStories } = useUserStories({ workItems });
+  const { userStories } = useUserStoryReport({ workItems });
 
   return (
     <div>

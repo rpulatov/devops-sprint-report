@@ -1,4 +1,5 @@
 import {
+  getCompletedStates,
   getDataFromWorkItem,
   getWorkItemsByIds,
   WorkItemState,
@@ -108,8 +109,11 @@ export async function getUserStoryReport({
     .filter((item) => !item.name && item.id !== USER_STORE_EMPTY_KEY)
     .map(({ id }) => id);
   const emptyUserStories = await getWorkItemsByIds(emptyUserStoryIds);
+
+  const completedStates = await getCompletedStates({ projectId });
+
   emptyUserStories.forEach((item) => {
-    const workItem = getDataFromWorkItem(item);
+    const workItem = getDataFromWorkItem(completedStates)(item);
     workItem.name = `(Wrong Sprint) ${workItem.name}`;
     createOrUpdateUserStoryMap(userStoryMap, workItem);
   });

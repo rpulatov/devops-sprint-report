@@ -109,7 +109,8 @@ export function getDataFromWorkItem(completedStates: Map<string, string[]>) {
     const workItemType: 'Task' | 'Bug' | 'User Story' | 'Feature' =
       item.fields['System.WorkItemType'];
 
-    const isClosed = completedStates.get(workItemType)?.includes(state);
+    const isClosed =
+      completedStates.get(workItemType)?.includes(state) || false;
 
     const relationReverse = item.relations?.find(
       (rel) => rel.rel === 'System.LinkTypes.Hierarchy-Reverse'
@@ -151,7 +152,7 @@ function createQueryWiql({ iterationPath, areaPath }: CreateQueryWiql) {
    AND ([System.AreaPath] = '${areaPath}' )`;
 }
 
-export type WorkItemState = ReturnType<ReturnType<typeof getDataFromWorkItem>>
+export type WorkItemState = ReturnType<ReturnType<typeof getDataFromWorkItem>>;
 
 export type GetWorkItemsByIterationParams = {
   projectId: string;

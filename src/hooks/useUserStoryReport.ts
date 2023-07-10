@@ -7,15 +7,17 @@ import { WorkItemState } from '../domains/workItems';
 
 export function useUserStoryReport({
   workItems,
+  completedStates,
 }: {
   workItems: WorkItemState[];
+  completedStates: Map<string, string[]>;
 }) {
   const [userStories, setUserStories] = useState<UserStoryReportItem[]>([]);
 
   useEffect(() => {
     setUserStories([]);
-    getUserStoryReport({ workItems }).then(setUserStories);
-  }, [workItems]);
+    getUserStoryReport({ workItems, completedStates }).then(setUserStories);
+  }, [workItems, completedStates]);
 
   return { userStories };
 }

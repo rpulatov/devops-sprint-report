@@ -7,6 +7,7 @@ import {
 
 export type GetUserStoryReportParams = {
   workItems: WorkItemState[];
+  completedStates: Map<string, string[]>;
 };
 
 export type UserStoryReportItem = {
@@ -70,6 +71,7 @@ function createOrUpdateUserStoryMap(
 
 export async function getUserStoryReport({
   workItems,
+  completedStates,
 }: GetUserStoryReportParams): Promise<UserStoryReportItem[]> {
   const userStoryMap = new Map<number, UserStoryReportItem>();
 
@@ -109,8 +111,6 @@ export async function getUserStoryReport({
     .filter((item) => !item.name && item.id !== USER_STORE_EMPTY_KEY)
     .map(({ id }) => id);
   const emptyUserStories = await getWorkItemsByIds(emptyUserStoryIds);
-
-  const completedStates = await getCompletedStates({ projectId });
 
   emptyUserStories.forEach((item) => {
     const workItem = getDataFromWorkItem(completedStates)(item);

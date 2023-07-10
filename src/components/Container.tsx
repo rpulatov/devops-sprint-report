@@ -27,13 +27,13 @@ export function Container({
     teamId,
   });
 
-  const { workItems } = useWorkItems({
+  const { workItems, completedStates } = useWorkItems({
     projectId,
     teamId,
     iterationPath: iteration.path,
   });
 
-  const { userStories } = useUserStoryReport({ workItems });
+  const { userStories } = useUserStoryReport({ workItems, completedStates });
 
   return (
     <div>

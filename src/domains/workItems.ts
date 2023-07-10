@@ -173,7 +173,5 @@ export async function getWorkItemsByIteration({
     query,
   });
 
-  const completedStates = await getCompletedStates({ projectId });
-
-  return workItemsRaw.map(getDataFromWorkItem(completedStates));
+  return workItemsRaw;
 }

@@ -1,22 +1,23 @@
 import React, { useCallback, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import * as XLSX from 'xlsx';
-import { SelectProject } from './components/SelectProject';
+import { SelectProject } from '../components/SelectProject';
 import {
   TeamProjectReference,
   WebApiTeam,
 } from 'azure-devops-extension-api/Core';
-import { SelectIteration } from './components/SelectIteration';
+import { SelectIteration } from '../components/SelectIteration';
 import { TeamSettingsIteration } from 'azure-devops-extension-api/Work';
-import { SelectTeam } from './components/SelectTeams';
-import { Container } from './components/Container';
-import { NotificationLayer } from './components/NotificationLayer';
-import { TypeReport } from './types/report';
+import { SelectTeam } from '../components/SelectTeams';
+import { Container } from '../components/Container';
+import { NotificationLayer } from '../components/NotificationLayer';
+import { TypeReport } from '../types/report';
 
-import './App.css';
-import { LogoutButton } from './components/LogoutButton';
+import './Report.css';
+import { LogoutButton } from '../components/LogoutButton';
 
-function App() {
+function Report() {
   const [currentProject, setCurrentProject] =
     useState<TeamProjectReference | null>(null);
 
@@ -33,6 +34,8 @@ function App() {
       setTypeReport(e.target.value as TypeReport),
     []
   );
+
+  const navigate = useNavigate();
 
   const exportToExcel = useCallback(() => {
     const wb = XLSX.utils.book_new();
@@ -101,7 +104,10 @@ function App() {
             </>
           ) : null}
         </div>
-        <LogoutButton />
+        <div>
+          <button onClick={() => navigate('/')}>На главную</button>
+          <LogoutButton />
+        </div>
       </div>
 
       <table id="sprint-title">
@@ -157,4 +163,4 @@ function App() {
   );
 }
 
-export default App;
+export default Report;

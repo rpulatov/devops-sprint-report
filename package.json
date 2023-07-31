@@ -12,16 +12,21 @@
     "azure-devops-extension-api": "^1.158.0",
     "azure-devops-extension-sdk": "^2.0.11",
     "azure-devops-ui": "^2.167.60",
+    "date-fns": "^2.30.0",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
+    "react-modal": "^3.16.1",
     "sheetjs": "^2.0.0",
+    "vis-timeline": "^7.7.2",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/react": "^16.14.0",
     "@types/react-dom": "^16.9.18",
+    "@types/react-modal": "^3.16.0",
     "@vitejs/plugin-react": "^3.1.0",
+    "react-router-dom": "^6.14.2",
     "typescript": "^4.9.3",
-    "vite": "^4.1.0"
+    "vite": "^4.4.7"
   }
 }

@@ -13,10 +13,10 @@ ReactDOM.render(
   <SurfaceContext.Provider value={{ background: SurfaceBackground.neutral }}>
     <BrowserRouter>
       <Routes>
-        <Route index element={<Home />} />
+        <Route path='/devops-sprint-report/' element={<Home />} />
 
-        <Route path="report" element={<Report />} />
-        <Route path="timeline" element={<WorkTimeline />} />
+        <Route path="/devops-sprint-report/report" element={<Report />} />
+        <Route path="/devops-sprint-report/timeline" element={<WorkTimeline />} />
 
         <Route path="*" element={<Home />} />
       </Routes>

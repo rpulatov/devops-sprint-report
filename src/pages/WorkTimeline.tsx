@@ -451,7 +451,7 @@ function WorkTimeline() {
                     </button>
                 </div>
                 <div>
-                    <button onClick={() => navigate('/')}>На главную</button>
+                    <button onClick={() => navigate('/devops-sprint-report/')}>На главную</button>
                 </div>
             </div>
             <div>

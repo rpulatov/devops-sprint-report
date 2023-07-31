@@ -105,7 +105,7 @@ function Report() {
           ) : null}
         </div>
         <div>
-          <button onClick={() => navigate('/')}>На главную</button>
+          <button onClick={() => navigate('/devops-sprint-report/')}>На главную</button>
           <LogoutButton />
         </div>
       </div>

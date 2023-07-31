@@ -4,9 +4,9 @@ function Home() {
     const navigate = useNavigate();
     return (
         <>
-            <button onClick={() => navigate('/report')}>Отчет</button>
+            <button onClick={() => navigate('/devops-sprint-report/report')}>Отчет</button>
             <br />
-            <button onClick={() => navigate('/timeline')}>Таймлайн</button>
+            <button onClick={() => navigate('/devops-sprint-report/timeline')}>Таймлайн</button>
         </>
     );
 }

@@ -1,5 +1,4 @@
-import { DayOfWeek } from 'azure-devops-extension-api/Common/System';
-import { render } from 'react-dom';
+import { isSameDay, differenceInHours, differenceInBusinessDays } from 'date-fns';
 
 export function diffInDays(date1: string | Date, date2: string | Date) {
   const dateObj1 = new Date(date1);
@@ -78,3 +77,30 @@ export function getNameOfDay(date: Date | string) {
   const d = new Date(date);
   return days[d.getDay()];
 }
+
+export function removeTime(date = new Date()) {
+  return new Date(date.toDateString());
+}
+
+export function differenceInBusinnessHours(start: Date, end: Date, avgWorkdayStartHour: number, avgWorkdayEndHour: number) {
+  if (isSameDay(start, end)) {
+    return end >= start ? differenceInHours(end, start) : 0;
+  } else {
+    const bdDiff = differenceInBusinessDays(end, start) - 1;
+    const hoursMiddle = bdDiff * (avgWorkdayEndHour - avgWorkdayStartHour);
+    let hoursLeft = avgWorkdayEndHour - start.getHours();
+    if (hoursLeft < 0) hoursLeft = 0;
+    let hoursRight = end.getHours() - avgWorkdayStartHour;
+    if (hoursRight < 0) hoursRight = 0;
+    return hoursLeft + hoursRight + hoursMiddle;
+  }
+}
+
+export function truncateMessage(message: string, maxLength: number) {
+  if (message.length <= maxLength) return message;
+  return message.slice(0, maxLength - 3) + '...';
+}
+
+export const getEnumKeys = <T extends object>(enumToDeconstruct: T): Array<keyof typeof enumToDeconstruct> => {
+  return Object.keys(enumToDeconstruct) as Array<keyof typeof enumToDeconstruct>;
+};

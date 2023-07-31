@@ -3,8 +3,11 @@ import {
   WorkItem,
   WorkItemQueryResult,
   WorkItemType,
+  WorkItemUpdate,
 } from 'azure-devops-extension-api/WorkItemTracking/WorkItemTracking';
-import { fetchAzure } from '../api';
+import { GitPullRequest, GitPullRequestCommentThread } from 'azure-devops-extension-api/Git/index';
+
+import { buildAzureWebUrl, fetchAzure, fetchAzureRawUrl } from '../api';
 
 export async function getCompletedStates({ projectId }: { projectId: string }) {
   return fetchAzure(`/wit/workitemtypes`, {
@@ -57,7 +60,55 @@ export async function getWorkItemsByIds(workItemsIds: number[]) {
   ).then((res: { value: WorkItem[] }[]) => res.flatMap((item) => item.value));
 }
 
-type GetWorkItemsByWiql = { projectId: string; teamId: string; query: string };
+export async function getWorkItemUpdatesById(workItemsId: number) {
+  return fetchAzure(`/wit/workItems/${workItemsId}/updates`)
+       .then((res: { value: WorkItemUpdate[] }) => res.value);
+}
+
+export async function getChildWorkItemsByParentId(workItemsId: number){
+  const workItem = await getWorkItemsByIds([workItemsId]).then((res: WorkItem[]) => res[0]);
+  return getChildWorkItemsByWorkItem(workItem);
+}
+
+export async function getChildWorkItemsByWorkItem(workItem: WorkItem){
+  const children_relations = workItem
+    .relations
+    .filter((relation) => relation.rel === 'System.LinkTypes.Hierarchy-Forward')
+    .filter((relation) => relation.attributes['name'] === 'Child');
+    const children_ids = children_relations
+    .map((relation) => parseWorkItemIdFromUrl(relation.url))
+    .filter((id) => id !== null) as number[];
+  return getWorkItemsByIds(children_ids);
+}
+
+export async function getRelatedPRsByWorkItemId(workItemsId: number){
+  const workItem = await getWorkItemsByIds([workItemsId]).then((res: WorkItem[]) => res[0]);
+  return getRelatedPRsByWorkItem(workItem);
+}
+
+export async function getRelatedPRsByWorkItem(workItem: WorkItem){
+  const pr_ids = workItem
+    .relations
+    .filter((relation) => relation.rel === 'ArtifactLink')
+    .filter((relation) => relation.attributes['name'] === 'Pull Request')
+    .map((relation) => parsePRIdFromUrl(relation.url));
+  return Promise.all(
+    pr_ids.map(async (pr_id) => await fetchAzure(`/git/pullrequests/${pr_id}`))
+  ).then((res) => res.map((item) => item as GitPullRequest));
+}
+
+export async function getPRThreadByPR(pr: GitPullRequest) {
+  return fetchAzureRawUrl(`${pr.url}/threads`)
+    .then((res: { value: GitPullRequestCommentThread[] }) => res.value);
+}
+
+function parsePRIdFromUrl(url: string) {
+  const parts = url.split('%2F')
+  const id = parts[parts.length - 1];
+  return id;
+}
+
+type GetWorkItemsByWiql = { projectId: string | undefined; teamId: string | undefined; query: string };
 export async function getWorkItemsByWiql({
   projectId,
   teamId,
@@ -174,4 +225,8 @@ export async function getWorkItemsByIteration({
   });
 
   return workItemsRaw;
+}
+
+export function getWorkItemWebUrl(workItemId: number) {
+  return buildAzureWebUrl(`_workitems/edit/${workItemId}`)
 }

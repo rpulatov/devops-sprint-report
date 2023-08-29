@@ -1,7 +1,6 @@
 import React, { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import * as XLSX from "xlsx";
 import { SelectProject } from "./components/SelectProject";
 import {
   TeamProjectReference,
@@ -37,7 +36,10 @@ function SprintReport() {
 
   const navigate = useNavigate();
 
-  const exportToExcel = useCallback(() => {
+  const exportToExcel = useCallback(async () => {
+
+    const XLSX = await import("xlsx")
+
     const wb = XLSX.utils.book_new();
 
     const ws1 = XLSX.utils.table_to_sheet(

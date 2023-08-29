@@ -1,26 +1,33 @@
-import ReactDOM from 'react-dom';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import ReactDOM from "react-dom";
+import { BrowserRouter, Routes, Route, redirect } from "react-router-dom";
 
-import Home from './pages/Home';
-import Report from './pages/Report';
-import WorkTimeline from './pages/WorkTimeline';
+import Home from "./pages/Home";
+import SprintReport from "./pages/SprintReport";
+import WorkTimeline from "./pages/WorkTimeline";
+import NoMatch from "./pages/NoMatch";
+import UserReport from "./pages/UserReport";
 
-import { SurfaceBackground, SurfaceContext } from 'azure-devops-ui/Surface';
+import { SurfaceBackground, SurfaceContext } from "azure-devops-ui/Surface";
 
-import 'azure-devops-ui/Core/override.css';
+import "azure-devops-ui/Core/override.css";
+import "./main.css";
+
+const { VITE_BASE_URL } = import.meta.env;
 
 ReactDOM.render(
   <SurfaceContext.Provider value={{ background: SurfaceBackground.neutral }}>
-    <BrowserRouter>
+    <BrowserRouter basename={VITE_BASE_URL}>
       <Routes>
-        <Route path='/devops-sprint-report/' element={<Home />} />
+        <Route path="/" element={<Home />} />
 
-        <Route path="/devops-sprint-report/report" element={<Report />} />
-        <Route path="/devops-sprint-report/timeline" element={<WorkTimeline />} />
+        <Route path="/report" element={<SprintReport />} />
+        <Route path="/user-report" element={<UserReport />} />
+        
+        <Route path="/timeline" element={<WorkTimeline />} />
 
-        <Route path="*" element={<Home />} />
+        <Route path="*" element={<NoMatch />} />
       </Routes>
     </BrowserRouter>
   </SurfaceContext.Provider>,
-  document.getElementById('root') as HTMLElement
+  document.getElementById("root") as HTMLElement
 );

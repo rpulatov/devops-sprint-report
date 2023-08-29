@@ -1,9 +1,9 @@
-import { TeamMember } from '../domains/teammembers';
-import { WorkItemState } from '../domains/workItems';
-import { TeamReportRow, useTeamReport } from '../hooks/useTeamReport';
-import { TypeReport } from '../types/report';
-import { Table } from './tables/Table';
-import { TableColumn } from './tables/TableColumn';
+import { TeamMember } from '../../../domains/teammembers';
+import { WorkItemState } from '../../../domains/workItems';
+import { TeamReportRow, useTeamReport } from '../../../hooks/useTeamReport';
+import { TypeReport } from '../../../types/report';
+import { Table } from '../../../components/tables/Table';
+import { TableColumn } from '../../../components/tables/TableColumn';
 
 const calcPercentageLoad = (
   item: Pick<TeamReportRow, 'capacity' | 'planEstimate'>

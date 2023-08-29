@@ -9,7 +9,7 @@ export function NotificationLayer() {
     {
       id: number;
       message: string;
-      timer: number;
+      timer: NodeJS.Timeout;
       ref: React.RefObject<Toast>;
     }[]
   >([]);

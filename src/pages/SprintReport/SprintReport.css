@@ -1,0 +1,25 @@
+.report_container {
+  width: 100%;
+  padding: 20px;
+}
+
+.report_sprint {
+  margin-top: 20px;
+}
+
+.userStoryClosed {
+  background-color: #7eb179;
+}
+
+.userStoryNotClosed {
+  background-color: #ff8f8f;
+}
+
+.noWrapColumn {
+  max-width: 100%;
+  white-space: nowrap;
+}
+
+.column-centered {
+  text-align: center;
+}

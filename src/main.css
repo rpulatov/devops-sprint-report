@@ -1,0 +1,13 @@
+#root {
+  width: 100%;
+}
+
+:root {
+  --callout-background-color: #000000;
+}
+
+body,
+html {
+  font-family: arial, sans-serif;
+  font-size: 12px;
+}

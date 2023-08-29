@@ -1,6 +1,6 @@
 import { WebApiTeam } from 'azure-devops-extension-api/Core';
 import React from 'react';
-import { useTeams } from '../hooks/useTeams';
+import { useTeams } from '../../../hooks/useTeams';
 
 type SelectTeamProps = {
   projectId: string;

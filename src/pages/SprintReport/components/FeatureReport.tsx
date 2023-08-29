@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
-import { UserStoryReportItem } from '../domains/userStoryReport';
-import { TypeReport } from '../types/report';
-import { Table } from './tables/Table';
-import { TableColumn } from './tables/TableColumn';
+import { UserStoryReportItem } from '../../../domains/userStoryReport';
+import { TypeReport } from '../../../types/report';
+import { Table } from '../../../components/tables/Table';
+import { TableColumn } from '../../../components/tables/TableColumn';
 
 type FeatureReportItem = {
   id: number;

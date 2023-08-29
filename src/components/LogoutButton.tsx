@@ -1,18 +1,30 @@
-import React from 'react';
-
-import { isAuth, saveAuth } from '../api';
+import React from "react";
+import { isAuth, requestAuth, saveAuth, updateAuthToken } from "../api";
 
 export function LogoutButton() {
-  React.useEffect(() => {}, []);
-
-  return isAuth() ? (
+  const [isAuthState,setIsAuthState] = React.useState(isAuth())
+  return isAuthState ? (
     <button
       onClick={() => {
-        saveAuth('');
-        window.location.reload();
+        saveAuth("");
+        updateAuthToken("");
+        setIsAuthState(isAuth())
       }}
     >
-      Выйти
+      Забыть Personal Access Token Azure DevOps
     </button>
-  ) : null;
+  ) : (
+    <button
+      onClick={() => {
+        const PAT = requestAuth();
+        if (PAT) {
+          saveAuth(PAT);
+          updateAuthToken(PAT);
+          setIsAuthState(isAuth())
+        }
+      }}
+    >
+      Ввести Personal Access Token Azure DevOps
+    </button>
+  );
 }

@@ -1,6 +1,6 @@
 import { TeamSettingsIteration } from 'azure-devops-extension-api/Work';
 import React from 'react';
-import { useIterations } from '../hooks/useIterations';
+import { useIterations } from '../../../hooks/useIterations';
 
 type SelectIterationProps = {
   projectId: string;

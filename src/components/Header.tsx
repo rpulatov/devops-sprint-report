@@ -1,18 +1,21 @@
 import React from "react";
 
-import "./Header.css";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { Header as HeaderAzure, TitleSize } from "azure-devops-ui/Header";
 
-type HeaderPrors = {};
+type HeaderPrors = { title?: string };
 export default function Header({
-  children,
+  title,
 }: React.PropsWithChildren<HeaderPrors>) {
+  const navigate = useNavigate();
   return (
-    <div className="header">
-      <div className="header_breadcrumbs">
-        <Link to="/">/Главная</Link>
-      </div>
-      <div className="header_content">{children}</div>
-    </div>
+    <HeaderAzure
+      title={title}
+      titleSize={TitleSize.Large}
+      separator
+      backButtonProps={{
+        onClick: () => navigate("/"),
+      }}
+    />
   );
 }

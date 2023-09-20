@@ -36,6 +36,8 @@ import {
 
 import "./WorkTimeline.css";
 import Header from "../../components/Header";
+import { Page } from "azure-devops-ui/Page";
+import { Card } from "azure-devops-ui/Card";
 
 function WorkTimeline() {
   const navigate = useNavigate();
@@ -131,9 +133,14 @@ function WorkTimeline() {
       const workItem = workItems[0];
       if (bugManagementMode === BugManagementMode.WithTasks)
         if (workItem.fields["System.WorkItemType"] !== "User Story")
-          throw new Error("WorkItem не является UserStory. Если это Bug c подзадачами, то в настройках можно выбрать \"Режим работы с багами\": \"Баги на уровне User Story\"");
+          throw new Error(
+            'WorkItem не является UserStory. Если это Bug c подзадачами, то в настройках можно выбрать "Режим работы с багами": "Баги на уровне User Story"'
+          );
       if (bugManagementMode === BugManagementMode.WithRequirement)
-        if (workItem.fields["System.WorkItemType"] !== "User Story" && workItem.fields["System.WorkItemType"] !== "Bug")
+        if (
+          workItem.fields["System.WorkItemType"] !== "User Story" &&
+          workItem.fields["System.WorkItemType"] !== "Bug"
+        )
           throw new Error("WorkItem не является UserStory или Bug");
       return workItem;
     };
@@ -187,7 +194,7 @@ function WorkTimeline() {
         } else {
           return WorkTimelineItemType.Unknown;
         }
-      }
+      };
 
       // load data about user story
       const ti = new WorkTimelineItem();
@@ -207,7 +214,9 @@ function WorkTimeline() {
         child_work_items.map(async (child_work_item) => {
           const ti = new WorkTimelineItem();
           ti.id = `wi-${child_work_item.id}`;
-          ti.type = get_type_of_wti(child_work_item.fields["System.WorkItemType"]);
+          ti.type = get_type_of_wti(
+            child_work_item.fields["System.WorkItemType"]
+          );
           ti.title = child_work_item.fields["System.Title"];
           ti.assignedTo =
             child_work_item.fields["System.AssignedTo"]?.displayName;
@@ -571,12 +580,17 @@ function WorkTimeline() {
   };
 
   return (
-    <>
-      <Header>
+    <Page>
+      <Header title="Таймлайн по Work Item" />
+      <Card>
         <input
           value={workItemId}
           onChange={(e) => setWorkItemId(e.target.value)}
-          placeholder={bugManagementMode === BugManagementMode.WithRequirement ? "User Story ID or Bug ID" : "User Story ID"}
+          placeholder={
+            bugManagementMode === BugManagementMode.WithRequirement
+              ? "User Story ID or Bug ID"
+              : "User Story ID"
+          }
         />
         <button
           onClick={handleWorkItemChangeButtonClick}
@@ -585,12 +599,15 @@ function WorkTimeline() {
           Применить WorkItem
         </button>
         <button onClick={openSettingsModal}>Настройки</button>
-      </Header>
+      </Card>
       <div>
         <br />
         <label>
           {currentWorkItem
-            ? "Выбран " + currentWorkItem.fields["System.WorkItemType"] + ": " + currentWorkItem.fields["System.Title"]
+            ? "Выбран " +
+              currentWorkItem.fields["System.WorkItemType"] +
+              ": " +
+              currentWorkItem.fields["System.Title"]
             : "Не выбран WorkItem"}
         </label>
         <br />
@@ -660,9 +677,7 @@ function WorkTimeline() {
               onChange={(e) => setAvgWorkdayEndHour(Number(e.target.value))}
             />
             <br />
-            <label>
-              Отметить, если на таймлайне нет активности в течение{" "}
-            </label>
+            <label>Отметить, если на таймлайне нет активности в течение </label>
             <input
               type="number"
               value={inactivityWindowInHours}
@@ -698,7 +713,7 @@ function WorkTimeline() {
       </div>
       <div id="timeline" />
       <NotificationLayer />
-    </>
+    </Page>
   );
 }
 

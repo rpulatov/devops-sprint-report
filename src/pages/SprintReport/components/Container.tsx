@@ -1,13 +1,13 @@
-import { TeamSettingsIteration } from 'azure-devops-extension-api/Work';
-import { useTeamMembers } from '../../../hooks/useTeamMembers';
+import { TeamSettingsIteration } from "azure-devops-extension-api/Work";
+import { useTeamMembers } from "../../../hooks/useTeamMembers";
 
-import { useWorkItems } from '../../../hooks/useWorkItems';
-import { useUserStoryReport } from '../../../hooks/useUserStoryReport';
-import { TypeReport } from '../../../types/report';
+import { useWorkItems } from "../../../hooks/useWorkItems";
+import { useUserStoryReport } from "../hooks/useUserStoryReport";
+import { TypeReport } from "../../../types/report";
 
-import { TeamReport } from './TeamReport';
-import { UserStoryReport } from './UserStoryReport';
-import { FeatureReport } from './FeatureReport';
+import { TeamReport } from "./TeamReport";
+import { UserStoryReport } from "./UserStoryReport";
+import { FeatureReport } from "./FeatureReport";
 
 type ContainerProps = {
   projectId: string;

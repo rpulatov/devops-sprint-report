@@ -15,6 +15,8 @@ import { TypeReport } from "../../types/report";
 import Header from "../../components/Header";
 
 import "./SprintReport.css";
+import { Page } from "azure-devops-ui/Page";
+import { Card } from "azure-devops-ui/Card";
 
 function SprintReport() {
   const [currentProject, setCurrentProject] =
@@ -37,8 +39,7 @@ function SprintReport() {
   const navigate = useNavigate();
 
   const exportToExcel = useCallback(async () => {
-
-    const XLSX = await import("xlsx")
+    const XLSX = await import("xlsx");
 
     const wb = XLSX.utils.book_new();
 
@@ -77,8 +78,9 @@ function SprintReport() {
   const colSpanTitleForTeamReport = 12;
 
   return (
-    <div className="report_container">
-      <Header>
+    <Page className="report_container">
+      <Header title="Отчет план/факт по спринту" />
+      <Card>
         <SelectProject
           onSelect={(data) => {
             setCurrentIteration(null);
@@ -102,7 +104,7 @@ function SprintReport() {
             </select>
           </>
         ) : null}
-      </Header>
+      </Card>
 
       <table id="sprint-title" className="report_sprint">
         <thead>
@@ -153,7 +155,7 @@ function SprintReport() {
         </>
       ) : null}
       <NotificationLayer />
-    </div>
+    </Page>
   );
 }
 

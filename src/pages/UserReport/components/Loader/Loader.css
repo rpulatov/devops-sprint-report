@@ -1,0 +1,7 @@
+.user-report-loader {
+  margin: 50px auto;
+}
+
+.user-report-loader > .bolt-spinner {
+  margin-top: 10px;
+}

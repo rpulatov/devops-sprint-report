@@ -14,6 +14,7 @@ import { useMinMaxIterations } from "./hooks/useMinMaxIterations";
 import { IterationAcrossProjects, useUserReport } from "./hooks/useUserReport";
 import getOverlappingDaysInIntervals from "date-fns/getOverlappingDaysInIntervals";
 import endOfDay from "date-fns/endOfDay";
+import merge from "lodash/merge";
 
 import "./UserReportContent.css";
 
@@ -64,11 +65,19 @@ export function UserReportContent({
       )
     );
 
-    for (let i = 0; i < filteredIterations.length; i++) {
-      await getUserReportByIteration(filteredIterations[i]);
-    }
+    const teamMembers = await Promise.all(
+      filteredIterations.map((iteration) => getUserReportByIteration(iteration))
+    ).then((res) =>
+      res.reduce(
+        (prevTeamMembers, teamMembers) => merge(prevTeamMembers, teamMembers),
+        {}
+      )
+    );
 
+    console.info(teamMembers);
     // по каждой итерации получить команду и составить общий список
+
+    setLoading(false);
   }, [intervalOfWork, dateRange, iterations]);
 
   return (

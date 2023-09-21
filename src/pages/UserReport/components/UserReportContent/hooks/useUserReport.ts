@@ -11,6 +11,8 @@ import endOfDay from "date-fns/endOfDay";
 import { getIterationCapacities } from "../../../../../domains/iterations";
 import { TeamSettingsIteration } from "azure-devops-extension-api/Work";
 import { getTeamMembers } from "../../../../../domains/teammembers";
+import format from "date-fns/format";
+import startOfDay from "date-fns/startOfDay";
 
 export type DateInterval = {
   startDate: Date;
@@ -24,28 +26,39 @@ export interface IterationAcrossProjects extends TeamSettingsIteration {
   };
 }
 
-export type UsersWorkDaysDataByIteration = {
-  [teamMemberId: string]: {
-    teamMember: {
-      id: string;
-      name: string;
-    };
-    workDays: {
-      [workDayText: string]: {
-        date: Date;
-        capacity: number;
-        completedWork: number;
-        projects: {
-          [projectId: string]: {
-            projectId: string;
-            capacity: number;
-            completedWork: number;
-          };
-        };
+export type TeamMemberWorkDay = {
+  date: Date;
+  projects: {
+    [projectId: string]: {
+      project: {
+        id: string;
+        name: string;
       };
+      capacity: number;
+      completedWork: number;
     };
   };
 };
+
+export type TeamMemberWorkDays = {
+  [workDayText: string]: TeamMemberWorkDay;
+};
+
+export type TeamMemberWithWorkDays = {
+  teamMember: {
+    id: string;
+    name: string;
+  };
+  workDays: TeamMemberWorkDays;
+};
+
+export type TeamMembersWithWorkDays = {
+  [teamMemberId: string]: TeamMemberWithWorkDays;
+};
+
+function getDateId(date: Date) {
+  return format(date, "ddMMyyyy");
+}
 
 export function useUserReport() {
   const generateWorkIntervals = React.useCallback(
@@ -99,7 +112,7 @@ export function useUserReport() {
   );
 
   // на входе: итерация проекта
-  // на выходе: по каждому члену команды даты рабочих дней, общий capacity на итерацию, общий completedWork
+  // на выходе: по каждому члену команды даты рабочих дней, в каждом рабочем дне capacity и completedWork по проекту
   const getUserReportByIteration = React.useCallback(
     async (iteration: IterationAcrossProjects) => {
       const { teams } = await getIterationCapacities({
@@ -113,7 +126,41 @@ export function useUserReport() {
         )
       ).then((res) => res.flat());
 
-      console.info({ iteration, teamMembers });
+      const teamMembersWithWorkDays =
+        teamMembers.reduce<TeamMembersWithWorkDays>(
+          (prevTeamMembers, teamMember) => {
+            if (teamMember.capacityPerDay === 0) return prevTeamMembers;
+
+            const workDays = teamMember.workDays.reduce<TeamMemberWorkDays>(
+              (prevWorkDays, day) => {
+                prevWorkDays[getDateId(day)] = {
+                  date: startOfDay(day),
+                  projects: {
+                    [iteration.project.id]: {
+                      project: { ...iteration.project },
+                      capacity: teamMember.capacityPerDay,
+                      completedWork: 0, //TODO
+                    },
+                  },
+                };
+                return prevWorkDays;
+              },
+              {}
+            );
+
+            prevTeamMembers[teamMember.id] = {
+              teamMember: {
+                id: teamMember.id,
+                name: teamMember.name,
+              },
+              workDays,
+            };
+            return prevTeamMembers;
+          },
+          {}
+        );
+
+      return teamMembersWithWorkDays;
     },
     []
   );

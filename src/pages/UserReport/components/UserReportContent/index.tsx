@@ -1,6 +1,5 @@
 import format from "date-fns/format";
 import startOfMonth from "date-fns/startOfMonth";
-import { Page } from "azure-devops-ui/Page";
 import { Dropdown } from "azure-devops-ui/Dropdown";
 import { Button } from "azure-devops-ui/Button";
 import { Spinner, SpinnerSize } from "azure-devops-ui/Spinner";
@@ -9,17 +8,14 @@ import { Card } from "azure-devops-ui/Card";
 import React from "react";
 import SelectDateRange from "../SelectDateRange";
 import { IntervalOfWork } from "../../../../types/report";
-import { TeamSettingsIteration } from "azure-devops-extension-api/Work";
 import { TeamProjectReference } from "azure-devops-extension-api/Core";
 
-import "./UserReportContent.css";
+import { useMinMaxIterations } from "./hooks/useMinMaxIterations";
+import { IterationAcrossProjects, useUserReport } from "./hooks/useUserReport";
+import getOverlappingDaysInIntervals from "date-fns/getOverlappingDaysInIntervals";
+import endOfDay from "date-fns/endOfDay";
 
-export interface IterationAcrossProjects extends TeamSettingsIteration {
-  project: {
-    id: string;
-    name: string;
-  };
-}
+import "./UserReportContent.css";
 
 export type UserReportContentProps = {
   iterations: IterationAcrossProjects[];
@@ -34,29 +30,45 @@ export function UserReportContent({
     startDate: format(startOfMonth(new Date()), "yyyy-MM-dd"),
     endDate: format(new Date(), "yyyy-MM-dd"),
   }));
-
-  const [maxIterationDate, minIterationDate] = React.useMemo(() => {
-    let max: Date | null = null,
-      min: Date | null = null;
-
-    iterations.forEach((iteration) => {
-      if (!min || iteration.attributes.startDate < min) {
-        min = iteration.attributes.startDate;
-      }
-      if (!max || iteration.attributes.finishDate > max) {
-        max = iteration.attributes.finishDate;
-      }
-    });
-    return [max, min] as [Date | null, Date | null];
-  }, [iterations]);
-
   const [intervalOfWork, setIntervalOfWork] =
     React.useState<IntervalOfWork | null>(null);
-
   const [loading, setLoading] = React.useState(false);
+  const [maxIterationDate, minIterationDate] = useMinMaxIterations(iterations);
 
-  const onSubmit = React.useCallback(() => {
+  const { generateWorkIntervals, getUserReportByIteration } = useUserReport();
+
+  const onSubmit = React.useCallback(async () => {
+    if (!intervalOfWork) return;
     setLoading(true);
+
+    const startDateOfRange = new Date(dateRange.startDate);
+    const endDateOfRange = endOfDay(new Date(dateRange.endDate));
+
+    // определить интервалы для отображения
+    const intervals = generateWorkIntervals(intervalOfWork, {
+      startDate: startDateOfRange,
+      endDate: endDateOfRange,
+    });
+
+    // отфильтровать только те итерации, которые пересекаются с выбранным диапазоном дат
+    const filteredIterations = iterations.filter((iteration) =>
+      getOverlappingDaysInIntervals(
+        {
+          start: iteration.attributes.startDate,
+          end: iteration.attributes.finishDate,
+        },
+        {
+          start: startDateOfRange,
+          end: endDateOfRange,
+        }
+      )
+    );
+
+    for (let i = 0; i < filteredIterations.length; i++) {
+      await getUserReportByIteration(filteredIterations[i]);
+    }
+
+    // по каждой итерации получить команду и составить общий список
   }, [intervalOfWork, dateRange, iterations]);
 
   return (

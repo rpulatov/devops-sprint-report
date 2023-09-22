@@ -11,12 +11,18 @@ import { IntervalOfWork } from "../../../../types/report";
 import { TeamProjectReference } from "azure-devops-extension-api/Core";
 
 import { useMinMaxIterations } from "./hooks/useMinMaxIterations";
-import { IterationAcrossProjects, useUserReport } from "./hooks/useUserReport";
+import {
+  IterationAcrossProjects,
+  TeamMembersWithWorkDays,
+  useUserReport,
+} from "./hooks/useUserReport";
 import getOverlappingDaysInIntervals from "date-fns/getOverlappingDaysInIntervals";
 import endOfDay from "date-fns/endOfDay";
 import merge from "lodash/merge";
 
 import "./UserReportContent.css";
+import { errorNotification } from "../../../../api/notificationObserver";
+import isWithinInterval from "date-fns/isWithinInterval";
 
 export type UserReportContentProps = {
   iterations: IterationAcrossProjects[];
@@ -35,48 +41,76 @@ export function UserReportContent({
     React.useState<IntervalOfWork | null>(null);
   const [loading, setLoading] = React.useState(false);
   const [maxIterationDate, minIterationDate] = useMinMaxIterations(iterations);
+  const [teamMembers, setTeamMembers] =
+    React.useState<TeamMembersWithWorkDays>();
 
   const { generateWorkIntervals, getUserReportByIteration } = useUserReport();
 
   const onSubmit = React.useCallback(async () => {
     if (!intervalOfWork) return;
     setLoading(true);
+    try {
+      const startDateOfRange = new Date(dateRange.startDate);
+      const endDateOfRange = endOfDay(new Date(dateRange.endDate));
 
-    const startDateOfRange = new Date(dateRange.startDate);
-    const endDateOfRange = endOfDay(new Date(dateRange.endDate));
+      // определить интервалы для отображения
+      const intervals = generateWorkIntervals(intervalOfWork, {
+        startDate: startDateOfRange,
+        endDate: endDateOfRange,
+      });
 
-    // определить интервалы для отображения
-    const intervals = generateWorkIntervals(intervalOfWork, {
-      startDate: startDateOfRange,
-      endDate: endDateOfRange,
-    });
+      // отфильтровать только те итерации, которые пересекаются с выбранным диапазоном дат
+      const filteredIterations = iterations.filter((iteration) =>
+        getOverlappingDaysInIntervals(
+          {
+            start: iteration.attributes.startDate,
+            end: iteration.attributes.finishDate,
+          },
+          {
+            start: startDateOfRange,
+            end: endDateOfRange,
+          }
+        )
+      );
 
-    // отфильтровать только те итерации, которые пересекаются с выбранным диапазоном дат
-    const filteredIterations = iterations.filter((iteration) =>
-      getOverlappingDaysInIntervals(
-        {
-          start: iteration.attributes.startDate,
-          end: iteration.attributes.finishDate,
-        },
-        {
-          start: startDateOfRange,
-          end: endDateOfRange,
-        }
-      )
-    );
+      const teamMembers = await Promise.all(
+        filteredIterations.map((iteration) =>
+          getUserReportByIteration(iteration)
+        )
+      ).then((res) =>
+        res.reduce(
+          (prevTeamMembers, teamMembers) => merge(prevTeamMembers, teamMembers),
+          {}
+        )
+      );
 
-    const teamMembers = await Promise.all(
-      filteredIterations.map((iteration) => getUserReportByIteration(iteration))
-    ).then((res) =>
-      res.reduce(
-        (prevTeamMembers, teamMembers) => merge(prevTeamMembers, teamMembers),
-        {}
-      )
-    );
+      Object.values(teamMembers).map((teamMember) => {
+        const workDaysOfTeamMember = Object.values(teamMember.workDays);
 
-    console.info(teamMembers);
-    // по каждой итерации получить команду и составить общий список
-
+        return {
+          teamMember: teamMember.teamMember,
+          intervals: intervals.map((interval) => {
+            return {
+              ...interval,
+              projects: Object.values(
+                workDaysOfTeamMember.reduce((prevProjects, workDay) => {
+                  if (
+                    isWithinInterval(workDay.date, {
+                      start: interval.startDate,
+                      end: interval.endDate,
+                    })
+                  ) {
+                  }
+                  return prevProjects;
+                }, {})
+              ),
+            };
+          }),
+        };
+      });
+    } catch (e) {
+      errorNotification(e);
+    }
     setLoading(false);
   }, [intervalOfWork, dateRange, iterations]);
 

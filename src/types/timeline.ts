@@ -31,3 +31,8 @@ export enum WorkTimelineMode {
     Overview = 'Общий',
     Detailed = 'Детализированный',
 }
+
+export enum BugManagementMode {
+    WithTasks = 'Баги на уровне Tasks',
+    WithRequirement = 'Баги на уровне User Story',
+}

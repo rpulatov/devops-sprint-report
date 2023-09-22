@@ -31,6 +31,7 @@ import {
   WorkTimelineItemEvent,
   WorkTimelineItemType,
   WorkTimelineMode,
+  BugManagementMode,
 } from "../../types/timeline";
 
 import "./WorkTimeline.css";
@@ -60,6 +61,9 @@ function WorkTimeline() {
   const [inactivityWindowInHours, setInactivityWindowInHours] = useState(3);
   const [timeToTestInHours, setTimeToTestInHours] = useState(2);
   const [timeToPRInHours, setTimeToPRInHours] = useState(4);
+  const [bugManagementMode, setBugManagementMode] = useState<BugManagementMode>(
+    BugManagementMode.WithTasks
+  );
   const [settingsModalIsOpen, setSettingsModalIsOpen] = useState(false);
 
   const openSettingsModal = () => {
@@ -90,6 +94,7 @@ function WorkTimeline() {
         inactivityWindowInHours,
         timeToTestInHours,
         timeToPRInHours,
+        bugManagementMode,
       })
     );
     setSettingsChanged(settingsChanged + 1);
@@ -100,13 +105,14 @@ function WorkTimeline() {
     inactivityWindowInHours,
     timeToTestInHours,
     timeToPRInHours,
+    bugManagementMode,
   ]);
 
   useEffect(() => {
     if (timelineData.length > 0) {
       drawTimeline();
     }
-  }, [timelineData, timelineMode, settingsChanged]);
+  }, [timelineData, timelineMode, bugManagementMode, settingsChanged]);
 
   const handleWorkItemChangeButtonClick = () => {
     const load = async () => {
@@ -123,9 +129,12 @@ function WorkTimeline() {
       if (workItems.length > 1) throw new Error("Multiple WorkItems found");
 
       const workItem = workItems[0];
-      if (workItem.fields["System.WorkItemType"] !== "User Story")
-        throw new Error("WorkItem is not a UserStory");
-
+      if (bugManagementMode === BugManagementMode.WithTasks)
+        if (workItem.fields["System.WorkItemType"] !== "User Story")
+          throw new Error("WorkItem не является UserStory. Если это Bug c подзадачами, то в настройках можно выбрать \"Режим работы с багами\": \"Баги на уровне User Story\"");
+      if (bugManagementMode === BugManagementMode.WithRequirement)
+        if (workItem.fields["System.WorkItemType"] !== "User Story" && workItem.fields["System.WorkItemType"] !== "Bug")
+          throw new Error("WorkItem не является UserStory или Bug");
       return workItem;
     };
 
@@ -168,10 +177,22 @@ function WorkTimeline() {
         );
       };
 
+      const get_type_of_wti = (type: string) => {
+        if (type === "Task") {
+          return WorkTimelineItemType.Task;
+        } else if (type === "Bug") {
+          return WorkTimelineItemType.Bug;
+        } else if (type === "User Story") {
+          return WorkTimelineItemType.UserStory;
+        } else {
+          return WorkTimelineItemType.Unknown;
+        }
+      }
+
       // load data about user story
       const ti = new WorkTimelineItem();
       ti.id = `wi-${currentWorkItem.id}`;
-      ti.type = WorkTimelineItemType.UserStory;
+      ti.type = get_type_of_wti(currentWorkItem.fields["System.WorkItemType"]);
       ti.title = currentWorkItem.fields["System.Title"];
       ti.assignedTo = currentWorkItem.fields["System.AssignedTo"]?.displayName;
       ti.url = getWorkItemWebUrl(currentWorkItem.id);
@@ -186,13 +207,7 @@ function WorkTimeline() {
         child_work_items.map(async (child_work_item) => {
           const ti = new WorkTimelineItem();
           ti.id = `wi-${child_work_item.id}`;
-          if (child_work_item.fields["System.WorkItemType"] === "Task") {
-            ti.type = WorkTimelineItemType.Task;
-          } else if (child_work_item.fields["System.WorkItemType"] === "Bug") {
-            ti.type = WorkTimelineItemType.Bug;
-          } else {
-            ti.type = WorkTimelineItemType.Unknown;
-          }
+          ti.type = get_type_of_wti(child_work_item.fields["System.WorkItemType"]);
           ti.title = child_work_item.fields["System.Title"];
           ti.assignedTo =
             child_work_item.fields["System.AssignedTo"]?.displayName;
@@ -301,7 +316,7 @@ function WorkTimeline() {
       content: `<div>${timelineItem.type}</div>${getTimelineItemLink(
         timelineItem,
         truncateMessage(timelineItem.title, 60)
-      )}<br><b>${truncateMessage(timelineItem.assignedTo, 20)}</b>`,
+      )}<br><b>${truncateMessage(timelineItem?.assignedTo, 20)}</b>`,
       className: `vis-${timelineItem.type}`,
       order: min(
         timelineItem.events.map(
@@ -561,7 +576,7 @@ function WorkTimeline() {
         <input
           value={workItemId}
           onChange={(e) => setWorkItemId(e.target.value)}
-          placeholder="User Story ID"
+          placeholder={bugManagementMode === BugManagementMode.WithRequirement ? "User Story ID or Bug ID" : "User Story ID"}
         />
         <button
           onClick={handleWorkItemChangeButtonClick}
@@ -569,17 +584,23 @@ function WorkTimeline() {
         >
           Применить WorkItem
         </button>
+        <button onClick={openSettingsModal}>Настройки</button>
       </Header>
       <div>
         <br />
-        <label>Выбранная User Story: </label>
-        {currentWorkItem
-          ? currentWorkItem.fields["System.Title"]
-          : "Не выбран WorkItem"}
+        <label>
+          {currentWorkItem
+            ? "Выбран " + currentWorkItem.fields["System.WorkItemType"] + ": " + currentWorkItem.fields["System.Title"]
+            : "Не выбран WorkItem"}
+        </label>
         <br />
         <br />
-        {currentWorkItem && (
-          <>
+        <Modal
+          isOpen={settingsModalIsOpen}
+          onRequestClose={closeSettingsModal}
+          ariaHideApp={false}
+        >
+          <div>
             <label>Вид таймлайна: </label>
             <select
               onChange={(e) => {
@@ -596,69 +617,84 @@ function WorkTimeline() {
                 </option>
               ))}
             </select>
-            <button onClick={openSettingsModal}>Настройки</button>
-            <Modal
-              isOpen={settingsModalIsOpen}
-              onRequestClose={closeSettingsModal}
-              ariaHideApp={false}
+          </div>
+          <hr />
+          <div>
+            <label>Режим работы с багами: </label>
+            <select
+              onChange={(e) => {
+                setBugManagementMode(
+                  BugManagementMode[
+                    e.target.value as keyof typeof BugManagementMode
+                  ]
+                );
+              }}
             >
-              <label>Показывать неактивные окна?</label>
-              <input
-                type="checkbox"
-                checked={showInactivityWindows}
-                onChange={(e) => setShowInactivityWindows(e.target.checked)}
-              />
-              <br />
-              <label>Примерное время рабочего дня (в часах)</label>
-              <label> с </label>
-              <input
-                type="number"
-                value={avgWorkdayStartHour}
-                onChange={(e) => setAvgWorkdayStartHour(Number(e.target.value))}
-              />
-              <label> до </label>
-              <input
-                type="number"
-                value={avgWorkdayEndHour}
-                onChange={(e) => setAvgWorkdayEndHour(Number(e.target.value))}
-              />
-              <br />
-              <label>
-                Отметить, если на таймлайне нет активности в течение{" "}
-              </label>
-              <input
-                type="number"
-                value={inactivityWindowInHours}
-                onChange={(e) =>
-                  setInactivityWindowInHours(Number(e.target.value))
-                }
-              />
-              <label> рабочих часов</label>
-              <br />
-              <label>Отметить, если задача не тестировалась в течение </label>
-              <input
-                type="number"
-                value={timeToTestInHours}
-                onChange={(e) => setTimeToTestInHours(Number(e.target.value))}
-              />
-              <label> рабочих часов</label>
-              <br />
-              <label>Отметить, если PR не проходил ревью в течение </label>
-              <input
-                type="number"
-                value={timeToPRInHours}
-                onChange={(e) => setTimeToPRInHours(Number(e.target.value))}
-              />
-              <label> рабочих часов</label>
-            </Modal>
-            <button
-              onClick={handleLoadTimelineDataClick}
-              disabled={timelineDataLoading}
-            >
-              Отрисовать таймлайн
-            </button>
-          </>
-        )}
+              {getEnumKeys(BugManagementMode).map((key, index) => (
+                <option key={index} value={key}>
+                  {BugManagementMode[key]}
+                </option>
+              ))}
+            </select>
+          </div>
+          <hr />
+          <div>
+            <label>Выделять неактивные "окна" в таймлайне?</label>
+            <input
+              type="checkbox"
+              checked={showInactivityWindows}
+              onChange={(e) => setShowInactivityWindows(e.target.checked)}
+            />
+            <br />
+            <label>Примерное время рабочего дня (в часах)</label>
+            <label> с </label>
+            <input
+              type="number"
+              value={avgWorkdayStartHour}
+              onChange={(e) => setAvgWorkdayStartHour(Number(e.target.value))}
+            />
+            <label> до </label>
+            <input
+              type="number"
+              value={avgWorkdayEndHour}
+              onChange={(e) => setAvgWorkdayEndHour(Number(e.target.value))}
+            />
+            <br />
+            <label>
+              Отметить, если на таймлайне нет активности в течение{" "}
+            </label>
+            <input
+              type="number"
+              value={inactivityWindowInHours}
+              onChange={(e) =>
+                setInactivityWindowInHours(Number(e.target.value))
+              }
+            />
+            <label> рабочих часов</label>
+            <br />
+            <label>Отметить, если задача не тестировалась в течение </label>
+            <input
+              type="number"
+              value={timeToTestInHours}
+              onChange={(e) => setTimeToTestInHours(Number(e.target.value))}
+            />
+            <label> рабочих часов</label>
+            <br />
+            <label>Отметить, если PR не проходил ревью в течение </label>
+            <input
+              type="number"
+              value={timeToPRInHours}
+              onChange={(e) => setTimeToPRInHours(Number(e.target.value))}
+            />
+            <label> рабочих часов</label>
+          </div>
+        </Modal>
+        <button
+          onClick={handleLoadTimelineDataClick}
+          disabled={timelineDataLoading}
+        >
+          Отрисовать таймлайн
+        </button>
       </div>
       <div id="timeline" />
       <NotificationLayer />

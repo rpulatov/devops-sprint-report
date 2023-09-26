@@ -13,6 +13,8 @@ import { TeamSettingsIteration } from "azure-devops-extension-api/Work";
 import { getTeamMembers } from "../../../../../domains/teammembers";
 import format from "date-fns/format";
 import startOfDay from "date-fns/startOfDay";
+import isWithinInterval from "date-fns/isWithinInterval";
+import mergeWith from "lodash/mergeWith";
 
 export type DateInterval = {
   startDate: Date;
@@ -26,17 +28,19 @@ export interface IterationAcrossProjects extends TeamSettingsIteration {
   };
 }
 
+export type WorkDayProject = {
+  project: {
+    id: string;
+    name: string;
+  };
+  capacity: number;
+  completedWork: number;
+};
+
 export type TeamMemberWorkDay = {
   date: Date;
   projects: {
-    [projectId: string]: {
-      project: {
-        id: string;
-        name: string;
-      };
-      capacity: number;
-      completedWork: number;
-    };
+    [projectId: string]: WorkDayProject;
   };
 };
 
@@ -54,6 +58,11 @@ export type TeamMemberWithWorkDays = {
 
 export type TeamMembersWithWorkDays = {
   [teamMemberId: string]: TeamMemberWithWorkDays;
+};
+
+export type TeamMemberWithInterval = {
+  teamMember: { id: string; name: string };
+  intervals: { projects: WorkDayProject[]; startDate: Date; endDate: Date }[];
 };
 
 function getDateId(date: Date) {
@@ -165,5 +174,62 @@ export function useUserReport() {
     []
   );
 
-  return { generateWorkIntervals, getUserReportByIteration };
+  // укладываем дневную работу членов команд в интервалы и суммируем показатели
+  const joinTeamMembersWithIntervals = React.useCallback(
+    (
+      teamMembers: TeamMembersWithWorkDays,
+      intervals: DateInterval[]
+    ): TeamMemberWithInterval[] => {
+      return Object.values(teamMembers).map((teamMember) => {
+        const workDaysOfTeamMember = Object.values(teamMember.workDays);
+
+        return {
+          teamMember: teamMember.teamMember,
+          intervals: intervals.map((interval) => {
+            return {
+              ...interval,
+              projects: Object.values(
+                workDaysOfTeamMember.reduce<{ [key: string]: WorkDayProject }>(
+                  (prevProjects, workDay) => {
+                    if (
+                      !isWithinInterval(workDay.date, {
+                        start: interval.startDate,
+                        end: interval.endDate,
+                      })
+                    ) {
+                      return prevProjects;
+                    }
+                    return mergeWith(
+                      prevProjects,
+                      workDay.projects,
+                      (
+                        prevValue: WorkDayProject | undefined,
+                        value: WorkDayProject
+                      ) =>
+                        !prevValue
+                          ? value
+                          : {
+                              ...prevValue,
+                              completedWork:
+                                prevValue.completedWork + value.completedWork,
+                              capacity: prevValue.capacity + value.capacity,
+                            }
+                    );
+                  },
+                  {}
+                )
+              ),
+            };
+          }),
+        };
+      });
+    },
+    []
+  );
+
+  return {
+    generateWorkIntervals,
+    getUserReportByIteration,
+    joinTeamMembersWithIntervals,
+  };
 }

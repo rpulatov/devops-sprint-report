@@ -11,8 +11,9 @@ import "./UserReport.css";
 import { Loader } from "./components/Loader";
 import {
   IterationAcrossProjects,
-  UserReportContent,
-} from "./components/UserReportContent";
+  UserReportContainer,
+} from "./components/UserReportContainer";
+import { UserReportContent } from "./components/UserReportContent";
 
 export const USER_REPORT_TITLE = "Отчет по сотруднику";
 
@@ -58,7 +59,9 @@ export default function UserReport() {
       <Header title={USER_REPORT_TITLE} />
       {loading ? <Loader /> : null}
       {iterations.length > 0 ? (
-        <UserReportContent iterations={iterations} projects={projects} />
+        <UserReportContainer iterations={iterations} projects={projects}>
+          <UserReportContent />
+        </UserReportContainer>
       ) : null}
     </Page>
   );

@@ -1,8 +1,8 @@
-import { useMemo } from 'react';
-import { UserStoryReportItem } from '../../../domains/userStoryReport';
-import { TypeReport } from '../../../types/report';
-import { Table } from '../../../components/tables/Table';
-import { TableColumn } from '../../../components/tables/TableColumn';
+import { useMemo } from "react";
+import { UserStoryReportItem } from "../hooks/userStoryReport";
+import { TypeReport } from "../../../types/report";
+import { Table } from "../../../components/tables/Table";
+import { TableColumn } from "../../../components/tables/TableColumn";
 
 type FeatureReportItem = {
   id: number;
@@ -64,16 +64,16 @@ export function FeatureReport({
       planEstimate: feature.planEstimate,
       planEstimateInPerc:
         total.planEstimate > 0
-          ? ((feature.planEstimate * 100) / total.planEstimate).toFixed(1) + '%'
-          : '-',
+          ? ((feature.planEstimate * 100) / total.planEstimate).toFixed(1) + "%"
+          : "-",
       complete: feature.planComplete + feature.overplanComplete,
       completeInPerc:
         total.planComplete + total.overplanComplete > 0
           ? (
               ((feature.planComplete + feature.overplanComplete) * 100) /
               (total.planComplete + total.overplanComplete)
-            ).toFixed(1) + '%'
-          : '-',
+            ).toFixed(1) + "%"
+          : "-",
     }));
 
     data.sort((a, b) => b.planEstimate - a.planEstimate);
@@ -89,20 +89,20 @@ export function FeatureReport({
       <TableColumn
         name="name"
         title="Функционал (Feature)"
-        renderFooter={() => 'ИТОГО:'}
+        renderFooter={() => "ИТОГО:"}
       />
       <TableColumn
         name="planEstimateInPerc"
         title="Плановые часы в %"
         className="column-centered"
-        renderFooter={() => '100%'}
+        renderFooter={() => "100%"}
       />
       {typeReport === TypeReport.SprintResult ? (
         <TableColumn
           name="completeInPerc"
           title="Фактические часы в %"
           className="column-centered"
-          renderFooter={() => '100%'}
+          renderFooter={() => "100%"}
         />
       ) : null}
       <TableColumn

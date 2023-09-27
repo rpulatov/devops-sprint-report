@@ -1,0 +1,10 @@
+.select-daterange {
+  display: flex;
+  flex-direction: row;
+}
+
+.select-daterange_divider {
+    padding-top: 7px;
+    padding-left: 10px;
+    padding-right: 10px;
+}

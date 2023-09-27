@@ -1,16 +1,16 @@
-import { TeamSettingsIteration } from 'azure-devops-extension-api/Work';
+import { TeamSettingsIteration } from "azure-devops-extension-api/Work";
 import {
   diffInDays,
   getDatesArray,
   getNameOfDay,
   isDayInRange,
-} from '../utils';
+} from "../utils";
 import {
   getCapacity,
   GetCapacityParams,
   getTeamDaysOff,
   getTeamSettings,
-} from './teamsettings';
+} from "./teamsettings";
 
 export type TeamMember = {
   id: string;
@@ -42,7 +42,7 @@ export async function getTeamMembers({
     new Date(iteration.attributes.finishDate)
   );
 
-  const workDays = iterationDays.reduce((workDaysAcc, iterationDay) => {
+  const workDaysOfTeam = iterationDays.reduce((workDaysAcc, iterationDay) => {
     if (isDayInRange(teamDaysOff.daysOff, iterationDay)) return workDaysAcc;
 
     if (!teamWorkingDays.includes(iterationDay.getDay())) return workDaysAcc;
@@ -52,12 +52,10 @@ export async function getTeamMembers({
   }, new Array<Date>());
 
   const teamMembers = capacity.map((item) => {
-    let workDaysCount = workDays.length;
+    let workDays = workDaysOfTeam;
     if (item.daysOff.length > 0) {
-      workDaysCount = workDays.reduce(
-        (count, workDay) =>
-          isDayInRange(item.daysOff, workDay) ? count : count + 1,
-        0
+      workDays = workDaysOfTeam.filter(
+        (workDay) => !isDayInRange(item.daysOff, workDay)
       );
     }
 
@@ -69,8 +67,11 @@ export async function getTeamMembers({
     return {
       id: item.teamMember.id,
       name: item.teamMember.displayName,
-      capacity: workDaysCount * allCapacityPerDay,
-      workDays: workDaysCount,
+      /** общий за спринт */
+      capacity: workDays.length * allCapacityPerDay,
+      /** на один рабочий день */
+      capacityPerDay: allCapacityPerDay,
+      workDays,
     };
   });
 

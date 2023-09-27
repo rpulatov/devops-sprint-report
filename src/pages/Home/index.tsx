@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { Button } from "azure-devops-ui/Button";
 
 import "./Home.css";
 import { LogoutButton } from "../../components/LogoutButton";
@@ -8,12 +9,25 @@ function Home() {
   return (
     <div className="homepage">
       <span className="homepage_title">Azure devops extensions</span>
-      <button className="homepage_link" onClick={() => navigate("/report")}>
-        Отчет план/факт по спринту
-      </button>
-      <button className="homepage_link" onClick={() => navigate("/timeline")}>
-        Таймлайн по Work Item
-      </button>
+      <Button
+        className="homepage_link"
+        primary
+        onClick={() => navigate("/report")}
+        text="Отчет план/факт по спринту"
+      />
+
+      <Button
+        className="homepage_link"
+        primary
+        onClick={() => navigate("/user-report")}
+        text="Отчет по сотруднику"
+      />
+      <Button
+        className="homepage_link"
+        primary
+        onClick={() => navigate("/timeline")}
+        text="Таймлайн по Work Item"
+      />
       <hr />
       <LogoutButton />
     </div>

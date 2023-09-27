@@ -1,8 +1,8 @@
-import { useMemo } from 'react';
-import { UserStoryReportItem } from '../../../domains/userStoryReport';
-import { TypeReport } from '../../../types/report';
-import { Table } from '../../../components/tables/Table';
-import { TableColumn } from '../../../components/tables/TableColumn';
+import { useMemo } from "react";
+import { UserStoryReportItem } from "../hooks/userStoryReport";
+import { TypeReport } from "../../../types/report";
+import { Table } from "../../../components/tables/Table";
+import { TableColumn } from "../../../components/tables/TableColumn";
 
 type UserStoryReportProps = {
   userStories: UserStoryReportItem[];
@@ -47,7 +47,7 @@ export function UserStoryReport({
         <TableColumn
           name="name"
           title="Цель спринта (User Story)"
-          renderFooter={() => 'ИТОГО:'}
+          renderFooter={() => "ИТОГО:"}
         />
         <TableColumn name="parentName" title="Функционал (Feature)" />
 
@@ -132,7 +132,7 @@ export function UserStoryReport({
                   ? `${((total.countClosed * 100) / userStories.length).toFixed(
                       1
                     )}%`
-                  : '-'}
+                  : "-"}
               </td>
             </tr>
             <tr>
@@ -145,7 +145,7 @@ export function UserStoryReport({
                       (1 - total.planRemaining / total.planEstimate) *
                       100
                     ).toFixed(1)}%`
-                  : '-'}
+                  : "-"}
               </td>
             </tr>
             <tr>
@@ -159,7 +159,7 @@ export function UserStoryReport({
                       (1 - total.overplanRemaining / total.overplanEstimate) *
                       100
                     ).toFixed(1)}%`
-                  : '-'}
+                  : "-"}
               </td>
             </tr>
             <tr>
@@ -170,7 +170,7 @@ export function UserStoryReport({
                       (total.overplanComplete * 100) /
                       (total.planComplete + total.overplanComplete)
                     ).toFixed(1)}%`
-                  : '-'}
+                  : "-"}
               </td>
             </tr>
           </tbody>

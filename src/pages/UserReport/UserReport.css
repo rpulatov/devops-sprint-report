@@ -1,0 +1,22 @@
+.user-report {
+  min-height: 100vh;
+}
+
+.user-report-filter > div {
+  flex-wrap: wrap;
+}
+
+.user-report-filter_input {
+  max-width: 300px;
+}
+
+.user-report-filter_label {
+  padding-top: 7px;
+  margin-right: 4px;
+}
+
+.user-report-filter_field {
+  display: flex;
+  flex-direction: row;
+  margin-right: 30px;
+}

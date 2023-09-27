@@ -2,12 +2,14 @@
   width: 100%;
 }
 
-:root {
-  --callout-background-color: #000000;
-}
-
 body,
 html {
   font-family: arial, sans-serif;
-  font-size: 12px;
+  font-size: 16px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }

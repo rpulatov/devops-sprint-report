@@ -7,8 +7,10 @@ import { Pill, PillSize, PillVariant } from "azure-devops-ui/Pill";
 
 import "./UserReportContent.css";
 
-type UserReportContentProps = { teamMembers: TeamMemberWithInterval[] };
-export function UserReportContent({ teamMembers }: UserReportContentProps) {
+type UserReportContentProps = { teamMembers?: TeamMemberWithInterval[] };
+export function UserReportContent({
+  teamMembers = [],
+}: UserReportContentProps) {
   return (
     <div className="user-report-content_container">
       {teamMembers.length > 0 ? (

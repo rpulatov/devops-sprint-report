@@ -37,6 +37,7 @@ export default function SelectDateRange({
     <div className="select-daterange">
       <TextField
         className="select-daterange_input"
+        // @ts-ignore
         inputType="date"
         value={startDate}
         onChange={(e, value) => onChange(value, endDate)}
@@ -46,6 +47,7 @@ export default function SelectDateRange({
       <span className="select-daterange_divider">-</span>
       <TextField
         className="select-daterange_input"
+        // @ts-ignore
         inputType="date"
         value={endDate}
         onChange={(e, value) => onChange(startDate, value)}

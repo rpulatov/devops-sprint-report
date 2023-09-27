@@ -1,8 +1,9 @@
 import { useMemo } from "react";
-import { UserStoryReportItem } from "../hooks/userStoryReport";
+
 import { TypeReport } from "../../../types/report";
 import { Table } from "../../../components/tables/Table";
 import { TableColumn } from "../../../components/tables/TableColumn";
+import { UserStoryReportItem } from "../hooks/useUserStoryReport";
 
 type FeatureReportItem = {
   id: number;

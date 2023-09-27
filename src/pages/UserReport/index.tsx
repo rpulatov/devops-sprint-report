@@ -9,11 +9,9 @@ import { errorNotification } from "../../api/notificationObserver";
 
 import "./UserReport.css";
 import { Loader } from "./components/Loader";
-import {
-  IterationAcrossProjects,
-  UserReportContainer,
-} from "./components/UserReportContainer";
+import { UserReportContainer } from "./components/UserReportContainer";
 import { UserReportContent } from "./components/UserReportContent";
+import { IterationAcrossProjects } from "./components/UserReportContainer/hooks/useUserReport";
 
 export const USER_REPORT_TITLE = "Отчет по сотруднику";
 

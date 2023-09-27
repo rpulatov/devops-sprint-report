@@ -16,7 +16,8 @@ export type TeamMember = {
   id: string;
   name: string;
   capacity: number;
-  workDays: number;
+  capacityPerDay: number;
+  workDays: Date[];
 };
 
 export type GetTeamMembersParams = {
@@ -28,7 +29,7 @@ export async function getTeamMembers({
   iteration,
   projectId,
   teamId,
-}: GetTeamMembersParams) {
+}: GetTeamMembersParams): Promise<TeamMember[]> {
   const data = await Promise.all([
     getCapacity({ projectId, teamId, iterationId: iteration.id }),
     getTeamDaysOff({ projectId, teamId, iterationId: iteration.id }),

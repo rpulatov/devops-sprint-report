@@ -1,6 +1,7 @@
 .report_container {
   width: 100%;
-  padding: 20px;
+  overflow: initial;
+  min-height: 100vh;
 }
 
 .report_sprint {

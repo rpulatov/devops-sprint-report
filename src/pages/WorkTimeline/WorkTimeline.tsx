@@ -580,7 +580,7 @@ function WorkTimeline() {
   };
 
   return (
-    <Page>
+    <div>
       <Header title="Таймлайн по Work Item" />
       <Card>
         <input
@@ -713,7 +713,7 @@ function WorkTimeline() {
       </div>
       <div id="timeline" />
       <NotificationLayer />
-    </Page>
+    </div>
   );
 }
 

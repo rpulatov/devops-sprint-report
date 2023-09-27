@@ -11,7 +11,7 @@
   "dependencies": {
     "azure-devops-extension-api": "^2.225.0",
     "azure-devops-extension-sdk": "^3.1.2",
-    "azure-devops-ui": "^2.167.60",
+    "azure-devops-ui": "^2.167.81",
     "date-fns": "^2.30.0",
     "lodash": "^4.17.21",
     "react": "^16.14.0",

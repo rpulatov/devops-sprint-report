@@ -48,7 +48,8 @@ export function UserReportContent({
                   className="user-report-content_project"
                   key={project.id}
                 >
-                  {project.name} - {capacity}/{completedWork}
+                  {project.name} - {capacity}/
+                  {completedWork > 0 ? completedWork.toFixed(1) : 0}
                 </Pill>
               ))}
             </div>

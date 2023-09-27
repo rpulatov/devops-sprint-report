@@ -1,5 +1,5 @@
 import React from "react";
-import { IterationAcrossProjects } from "..";
+import { IterationAcrossProjects } from "./useUserReport";
 
 export function useMinMaxIterations(iterations: IterationAcrossProjects[]) {
   return React.useMemo(() => {

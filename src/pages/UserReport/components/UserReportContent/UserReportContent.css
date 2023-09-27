@@ -1,0 +1,37 @@
+.user-report-content {
+}
+
+.user-report-content_container {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-report-content_header {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  margin-left: 20px;
+  margin-bottom: 10px;
+}
+
+.user-report-content_row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  background-color: #fff;
+  margin-bottom: 10px;
+}
+
+.user-report-content_col {
+  width: 150px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+
+  margin-right: 10px;
+}
+
+.user-report-content_project {
+  margin: 2px 0;
+}

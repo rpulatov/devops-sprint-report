@@ -15,6 +15,10 @@ import format from "date-fns/format";
 import startOfDay from "date-fns/startOfDay";
 import isWithinInterval from "date-fns/isWithinInterval";
 import mergeWith from "lodash/mergeWith";
+import {
+  getShortDataFromWorkItem,
+  getWorkItemsByIteration,
+} from "../../../../../domains/workItems";
 
 export type DateInterval = {
   startDate: Date;
@@ -135,10 +139,50 @@ export function useUserReport() {
         )
       ).then((res) => res.flat());
 
+      const workItems = await Promise.all(
+        teams.map(({ teamId }) =>
+          getWorkItemsByIteration({
+            projectId: iteration.project.id,
+            iterationPath: iteration.path,
+            teamId,
+          })
+        )
+      ).then((res) => res.flat().map(getShortDataFromWorkItem()));
+
+      const workItemsAggregate = workItems.reduce<{
+        [teamMemberId: string]: {
+          completedWork: number;
+          originalEstimate: number;
+          remainingWork: number;
+        };
+      }>((prev, cur) => {
+        if (!cur.assignedTo) return prev;
+        if (!prev[cur.assignedTo.id]) {
+          cur.completedWork;
+          prev[cur.assignedTo.id] = {
+            completedWork: cur.completedWork,
+            originalEstimate: cur.originalEstimate,
+            remainingWork: cur.remainingWork,
+          };
+        } else {
+          prev[cur.assignedTo.id].completedWork += cur.completedWork;
+          prev[cur.assignedTo.id].originalEstimate += cur.originalEstimate;
+          prev[cur.assignedTo.id].remainingWork += cur.remainingWork;
+        }
+        return prev;
+      }, {});
+
       const teamMembersWithWorkDays =
         teamMembers.reduce<TeamMembersWithWorkDays>(
           (prevTeamMembers, teamMember) => {
-            if (teamMember.capacityPerDay === 0) return prevTeamMembers;
+            if (!teamMember.workDays.length) return prevTeamMembers;
+
+            const completedWorkPerDay =
+              (workItemsAggregate[teamMember.id]?.completedWork ?? 0) /
+              teamMember.workDays.length;
+
+            if (teamMember.capacityPerDay === 0 && completedWorkPerDay === 0)
+              return prevTeamMembers;
 
             const workDays = teamMember.workDays.reduce<TeamMemberWorkDays>(
               (prevWorkDays, day) => {
@@ -148,7 +192,7 @@ export function useUserReport() {
                     [iteration.project.id]: {
                       project: { ...iteration.project },
                       capacity: teamMember.capacityPerDay,
-                      completedWork: 0, //TODO
+                      completedWork: completedWorkPerDay,
                     },
                   },
                 };

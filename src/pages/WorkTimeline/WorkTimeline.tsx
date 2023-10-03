@@ -1,91 +1,90 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react"
 
-import { errorNotification } from "../../api/notificationObserver";
+import Modal from "react-modal"
+import { useNavigate } from "react-router-dom"
+
+import { WorkItem } from "azure-devops-extension-api/WorkItemTracking"
+import { Card } from "azure-devops-ui/Card"
+import { Page } from "azure-devops-ui/Page"
+import { addDays, isWeekend, min, parseISO } from "date-fns"
+import { Timeline } from "vis-timeline/esnext"
+import "vis-timeline/styles/vis-timeline-graph2d.min.css"
+
+import { errorNotification } from "../../api/notificationObserver"
+import Header from "../../components/Header"
+import { NotificationLayer } from "../../components/NotificationLayer"
 import {
-  getCompletedStates,
-  getWorkItemUpdatesById,
   getChildWorkItemsByWorkItem,
-  getWorkItemsByWiql,
-  getRelatedPRsByWorkItem,
+  getCompletedStates,
   getPRThreadByPR,
+  getRelatedPRsByWorkItem,
+  getWorkItemUpdatesById,
   getWorkItemWebUrl,
-} from "../../domains/workItems";
-import { WorkItem } from "azure-devops-extension-api/WorkItemTracking";
-import { addDays, isWeekend, min, parseISO } from "date-fns";
-import Modal from "react-modal";
-import { Timeline } from "vis-timeline/esnext";
-
-import "vis-timeline/styles/vis-timeline-graph2d.min.css";
-
+  getWorkItemsByWiql,
+} from "../../domains/workItems"
 import {
-  truncateMessage,
-  getDatesArray,
-  removeTime,
-  getEnumKeys,
-  differenceInBusinnessHours,
-} from "../../utils";
-import { NotificationLayer } from "../../components/NotificationLayer";
-import {
+  BugManagementMode,
   WorkTimelineItem,
   WorkTimelineItemEvent,
   WorkTimelineItemType,
   WorkTimelineMode,
-  BugManagementMode,
-} from "../../types/timeline";
-
-import "./WorkTimeline.css";
-import Header from "../../components/Header";
-import { Page } from "azure-devops-ui/Page";
-import { Card } from "azure-devops-ui/Card";
+} from "../../types/timeline"
+import {
+  differenceInBusinnessHours,
+  getDatesArray,
+  getEnumKeys,
+  removeTime,
+  truncateMessage,
+} from "../../utils"
+import "./WorkTimeline.css"
 
 function WorkTimeline() {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
-  const [workItemId, setWorkItemId] = useState("");
-  const [currentWorkItem, setWorkItem] = useState<WorkItem | null>(null);
-  const [workItemLoading, setWorkItemLoading] = useState(false);
-  const [timelineData, setTimelineData] = useState<WorkTimelineItem[]>([]);
-  const [timelineDataLoading, setTimelineDataLoading] = useState(false);
-  const [timeline, setTimeline] = useState<Timeline | null>(null);
+  const [workItemId, setWorkItemId] = useState("")
+  const [currentWorkItem, setWorkItem] = useState<WorkItem | null>(null)
+  const [workItemLoading, setWorkItemLoading] = useState(false)
+  const [timelineData, setTimelineData] = useState<WorkTimelineItem[]>([])
+  const [timelineDataLoading, setTimelineDataLoading] = useState(false)
+  const [timeline, setTimeline] = useState<Timeline | null>(null)
   const [timelineMode, setTimelineMode] = useState<WorkTimelineMode>(
     WorkTimelineMode.Overview
-  );
+  )
   const [completedStates, setCompletedStates] = useState<Map<string, string[]>>(
     new Map()
-  );
+  )
 
   // settings
-  const [settingsChanged, setSettingsChanged] = useState(0);
-  const [showInactivityWindows, setShowInactivityWindows] = useState(true);
-  const [avgWorkdayStartHour, setAvgWorkdayStartHour] = useState(9);
-  const [avgWorkdayEndHour, setAvgWorkdayEndHour] = useState(18);
-  const [inactivityWindowInHours, setInactivityWindowInHours] = useState(3);
-  const [timeToTestInHours, setTimeToTestInHours] = useState(2);
-  const [timeToPRInHours, setTimeToPRInHours] = useState(4);
+  const [settingsChanged, setSettingsChanged] = useState(0)
+  const [showInactivityWindows, setShowInactivityWindows] = useState(true)
+  const [avgWorkdayStartHour, setAvgWorkdayStartHour] = useState(9)
+  const [avgWorkdayEndHour, setAvgWorkdayEndHour] = useState(18)
+  const [inactivityWindowInHours, setInactivityWindowInHours] = useState(3)
+  const [timeToTestInHours, setTimeToTestInHours] = useState(2)
+  const [timeToPRInHours, setTimeToPRInHours] = useState(4)
   const [bugManagementMode, setBugManagementMode] = useState<BugManagementMode>(
     BugManagementMode.WithTasks
-  );
-  const [settingsModalIsOpen, setSettingsModalIsOpen] = useState(false);
+  )
+  const [settingsModalIsOpen, setSettingsModalIsOpen] = useState(false)
 
   const openSettingsModal = () => {
-    setSettingsModalIsOpen(true);
-  };
+    setSettingsModalIsOpen(true)
+  }
   const closeSettingsModal = () => {
-    setSettingsModalIsOpen(false);
-  };
+    setSettingsModalIsOpen(false)
+  }
   useEffect(() => {
-    const settingsStr = localStorage.getItem("settings");
+    const settingsStr = localStorage.getItem("settings")
     if (settingsStr) {
-      const settings = JSON.parse(settingsStr);
-      setShowInactivityWindows(settings.showInactivityWindows);
-      setAvgWorkdayStartHour(settings.avgWorkdayStartHour);
-      setAvgWorkdayEndHour(settings.avgWorkdayEndHour);
-      setInactivityWindowInHours(settings.inactivityWindowInHours);
-      setTimeToTestInHours(settings.timeToTestInHours);
-      setTimeToPRInHours(settings.timeToPRInHours);
+      const settings = JSON.parse(settingsStr)
+      setShowInactivityWindows(settings.showInactivityWindows)
+      setAvgWorkdayStartHour(settings.avgWorkdayStartHour)
+      setAvgWorkdayEndHour(settings.avgWorkdayEndHour)
+      setInactivityWindowInHours(settings.inactivityWindowInHours)
+      setTimeToTestInHours(settings.timeToTestInHours)
+      setTimeToPRInHours(settings.timeToPRInHours)
     }
-  }, []);
+  }, [])
   useEffect(() => {
     localStorage.setItem(
       "settings",
@@ -98,8 +97,8 @@ function WorkTimeline() {
         timeToPRInHours,
         bugManagementMode,
       })
-    );
-    setSettingsChanged(settingsChanged + 1);
+    )
+    setSettingsChanged(settingsChanged + 1)
   }, [
     showInactivityWindows,
     avgWorkdayStartHour,
@@ -108,173 +107,171 @@ function WorkTimeline() {
     timeToTestInHours,
     timeToPRInHours,
     bugManagementMode,
-  ]);
+  ])
 
   useEffect(() => {
     if (timelineData.length > 0) {
-      drawTimeline();
+      drawTimeline()
     }
-  }, [timelineData, timelineMode, bugManagementMode, settingsChanged]);
+  }, [timelineData, timelineMode, bugManagementMode, settingsChanged])
 
   const handleWorkItemChangeButtonClick = () => {
     const load = async () => {
-      if (workItemId === "") throw new Error("WorkItem is not specified");
+      if (workItemId === "") throw new Error("WorkItem is not specified")
 
-      setWorkItemLoading(true);
+      setWorkItemLoading(true)
       const workItems = await getWorkItemsByWiql({
         projectId: undefined,
         teamId: undefined,
         query: `SELECT [System.Title], [System.WorkItemType] FROM WorkItems WHERE [System.Id] = ${workItemId}`,
-      });
+      })
 
-      if (workItems.length === 0) throw new Error("WorkItem not found");
-      if (workItems.length > 1) throw new Error("Multiple WorkItems found");
+      if (workItems.length === 0) throw new Error("WorkItem not found")
+      if (workItems.length > 1) throw new Error("Multiple WorkItems found")
 
-      const workItem = workItems[0];
+      const workItem = workItems[0]
       if (bugManagementMode === BugManagementMode.WithTasks)
         if (workItem.fields["System.WorkItemType"] !== "User Story")
           throw new Error(
             'WorkItem не является UserStory. Если это Bug c подзадачами, то в настройках можно выбрать "Режим работы с багами": "Баги на уровне User Story"'
-          );
+          )
       if (bugManagementMode === BugManagementMode.WithRequirement)
         if (
           workItem.fields["System.WorkItemType"] !== "User Story" &&
           workItem.fields["System.WorkItemType"] !== "Bug"
         )
-          throw new Error("WorkItem не является UserStory или Bug");
-      return workItem;
-    };
+          throw new Error("WorkItem не является UserStory или Bug")
+      return workItem
+    }
 
     return load()
       .then(setWorkItem)
       .catch(errorNotification)
-      .finally(() => setWorkItemLoading(false));
-  };
+      .finally(() => setWorkItemLoading(false))
+  }
 
   const handleLoadTimelineDataClick = async () => {
     const load = async () => {
-      setTimelineDataLoading(true);
-      if (!currentWorkItem) throw new Error("WorkItem is not specified");
+      setTimelineDataLoading(true)
+      if (!currentWorkItem) throw new Error("WorkItem is not specified")
 
-      let data: WorkTimelineItem[] = [];
+      let data: WorkTimelineItem[] = []
 
       const completedStates = await getCompletedStates({
         projectId: currentWorkItem.fields["System.TeamProject"],
-      });
-      setCompletedStates(completedStates);
+      })
+      setCompletedStates(completedStates)
 
       const load_work_item_state_events = async (workItemId: number) => {
         // get events with state changed
-        return await getWorkItemUpdatesById(workItemId).then(
-          (workItemUpdates) =>
-            workItemUpdates
-              .filter(
-                (workItemUpdate) =>
-                  workItemUpdate.fields &&
-                  workItemUpdate.fields.hasOwnProperty("System.State")
-              )
-              .map((workItemUpdate) => {
-                let res = new WorkTimelineItemEvent();
-                res.changedAt =
-                  workItemUpdate.fields["System.ChangedDate"].newValue;
-                res.changedBy = workItemUpdate.revisedBy.displayName;
-                res.event = workItemUpdate.fields["System.State"].newValue;
-                return res;
-              })
-        );
-      };
+        return await getWorkItemUpdatesById(workItemId).then(workItemUpdates =>
+          workItemUpdates
+            .filter(
+              workItemUpdate =>
+                workItemUpdate.fields &&
+                workItemUpdate.fields.hasOwnProperty("System.State")
+            )
+            .map(workItemUpdate => {
+              let res = new WorkTimelineItemEvent()
+              res.changedAt =
+                workItemUpdate.fields["System.ChangedDate"].newValue
+              res.changedBy = workItemUpdate.revisedBy.displayName
+              res.event = workItemUpdate.fields["System.State"].newValue
+              return res
+            })
+        )
+      }
 
       const get_type_of_wti = (type: string) => {
         if (type === "Task") {
-          return WorkTimelineItemType.Task;
+          return WorkTimelineItemType.Task
         } else if (type === "Bug") {
-          return WorkTimelineItemType.Bug;
+          return WorkTimelineItemType.Bug
         } else if (type === "User Story") {
-          return WorkTimelineItemType.UserStory;
+          return WorkTimelineItemType.UserStory
         } else {
-          return WorkTimelineItemType.Unknown;
+          return WorkTimelineItemType.Unknown
         }
-      };
+      }
 
       // load data about user story
-      const ti = new WorkTimelineItem();
-      ti.id = `wi-${currentWorkItem.id}`;
-      ti.type = get_type_of_wti(currentWorkItem.fields["System.WorkItemType"]);
-      ti.title = currentWorkItem.fields["System.Title"];
-      ti.assignedTo = currentWorkItem.fields["System.AssignedTo"]?.displayName;
-      ti.url = getWorkItemWebUrl(currentWorkItem.id);
-      ti.events = await load_work_item_state_events(currentWorkItem.id);
-      data.push(ti);
+      const ti = new WorkTimelineItem()
+      ti.id = `wi-${currentWorkItem.id}`
+      ti.type = get_type_of_wti(currentWorkItem.fields["System.WorkItemType"])
+      ti.title = currentWorkItem.fields["System.Title"]
+      ti.assignedTo = currentWorkItem.fields["System.AssignedTo"]?.displayName
+      ti.url = getWorkItemWebUrl(currentWorkItem.id)
+      ti.events = await load_work_item_state_events(currentWorkItem.id)
+      data.push(ti)
 
       // load data about children
-      const child_work_items = await getChildWorkItemsByWorkItem(
-        currentWorkItem
-      );
+      const child_work_items =
+        await getChildWorkItemsByWorkItem(currentWorkItem)
       const child_tis = await Promise.all(
-        child_work_items.map(async (child_work_item) => {
-          const ti = new WorkTimelineItem();
-          ti.id = `wi-${child_work_item.id}`;
+        child_work_items.map(async child_work_item => {
+          const ti = new WorkTimelineItem()
+          ti.id = `wi-${child_work_item.id}`
           ti.type = get_type_of_wti(
             child_work_item.fields["System.WorkItemType"]
-          );
-          ti.title = child_work_item.fields["System.Title"];
+          )
+          ti.title = child_work_item.fields["System.Title"]
           ti.assignedTo =
-            child_work_item.fields["System.AssignedTo"]?.displayName;
-          ti.url = getWorkItemWebUrl(child_work_item.id);
-          ti.events = await load_work_item_state_events(child_work_item.id);
-          return ti;
+            child_work_item.fields["System.AssignedTo"]?.displayName
+          ti.url = getWorkItemWebUrl(child_work_item.id)
+          ti.events = await load_work_item_state_events(child_work_item.id)
+          return ti
         })
-      );
-      data.push(...child_tis);
+      )
+      data.push(...child_tis)
 
       // load data about PRs
-      const wit = [currentWorkItem].concat(child_work_items);
+      const wit = [currentWorkItem].concat(child_work_items)
       const prs = await Promise.all(
-        wit.map(async (work_item) => await getRelatedPRsByWorkItem(work_item))
-      ).then((prs) =>
+        wit.map(async work_item => await getRelatedPRsByWorkItem(work_item))
+      ).then(prs =>
         prs
           .flat()
           // take distinct prs
           .filter(
             (pr, index, self) =>
-              self.findIndex((p) => p.pullRequestId === pr.pullRequestId) ===
+              self.findIndex(p => p.pullRequestId === pr.pullRequestId) ===
               index
           )
-      );
+      )
       const pr_tis = await Promise.all(
-        prs.map(async (pr) => {
-          const ti = new WorkTimelineItem();
-          ti.id = `pr-${pr.pullRequestId}`;
-          ti.type = WorkTimelineItemType.PR;
-          ti.title = pr.title;
-          ti.assignedTo = pr.createdBy.displayName;
+        prs.map(async pr => {
+          const ti = new WorkTimelineItem()
+          ti.id = `pr-${pr.pullRequestId}`
+          ti.type = WorkTimelineItemType.PR
+          ti.title = pr.title
+          ti.assignedTo = pr.createdBy.displayName
 
-          ti.events = [];
+          ti.events = []
           ti.events.push(
             new WorkTimelineItemEvent(
               "Created",
               pr.createdBy.displayName,
               pr.creationDate
             )
-          );
+          )
 
-          const pr_thread = await getPRThreadByPR(pr);
+          const pr_thread = await getPRThreadByPR(pr)
           const pr_thread_events = pr_thread
-            .map((pr_thread_item) => pr_thread_item.comments)
+            .map(pr_thread_item => pr_thread_item.comments)
             .flat()
             .filter(
-              (pr_thread_comment) =>
+              pr_thread_comment =>
                 pr_thread_comment.author.displayName !==
                 "Microsoft.VisualStudio.Services.TFS"
             )
-            .map((pr_thread_comment) => {
-              let res = new WorkTimelineItemEvent();
-              res.changedAt = pr_thread_comment.publishedDate;
-              res.changedBy = pr_thread_comment.author.displayName;
-              res.event = pr_thread_comment.content;
-              return res;
-            });
-          ti.events.push(...pr_thread_events);
+            .map(pr_thread_comment => {
+              let res = new WorkTimelineItemEvent()
+              res.changedAt = pr_thread_comment.publishedDate
+              res.changedBy = pr_thread_comment.author.displayName
+              res.event = pr_thread_comment.content
+              return res
+            })
+          ti.events.push(...pr_thread_events)
 
           ti.events.push(
             new WorkTimelineItemEvent(
@@ -282,33 +279,33 @@ function WorkTimeline() {
               pr.closedBy?.displayName,
               pr.closedDate
             )
-          );
-          return ti;
+          )
+          return ti
         })
-      );
-      data.push(...pr_tis);
+      )
+      data.push(...pr_tis)
 
-      return data;
-    };
+      return data
+    }
 
     return load()
       .then(setTimelineData)
       .catch(errorNotification)
-      .finally(() => setTimelineDataLoading(false));
-  };
+      .finally(() => setTimelineDataLoading(false))
+  }
 
   const drawTimeline = () => {
     // parse date strings to Date objects
     const _timelineData: WorkTimelineItem[] = timelineData.map(
-      (timelineItem) => ({
+      timelineItem => ({
         ...timelineItem,
-        events: timelineItem.events.map((timelineItemEvent) => ({
+        events: timelineItem.events.map(timelineItemEvent => ({
           ...timelineItemEvent,
           // @ts-expect-error
           changedAt: parseISO(timelineItemEvent.changedAt),
         })) as WorkTimelineItemEvent[],
       })
-    );
+    )
 
     // create timeline groups by items
     const getTimelineItemLink = (
@@ -316,11 +313,11 @@ function WorkTimeline() {
       text: string
     ) => {
       if (timelineItem.url)
-        return `<a href="${timelineItem.url}" target="_blank">${text}</a>`;
-      return text;
-    };
+        return `<a href="${timelineItem.url}" target="_blank">${text}</a>`
+      return text
+    }
 
-    const timelineGroups = _timelineData.map((timelineItem) => ({
+    const timelineGroups = _timelineData.map(timelineItem => ({
       id: timelineItem.id,
       content: `<div>${timelineItem.type}</div>${getTimelineItemLink(
         timelineItem,
@@ -329,15 +326,15 @@ function WorkTimeline() {
       className: `vis-${timelineItem.type}`,
       order: min(
         timelineItem.events.map(
-          (timelineItemEvent) => timelineItemEvent.changedAt
+          timelineItemEvent => timelineItemEvent.changedAt
         )
       ), // sorting
-    }));
+    }))
 
     // create timeline items by events in items
     const timelineItems = _timelineData
-      .map((timelineItem) =>
-        timelineItem.events.map((timelineItemEvent) => ({
+      .map(timelineItem =>
+        timelineItem.events.map(timelineItemEvent => ({
           start: timelineItemEvent.changedAt,
           content:
             timelineMode === WorkTimelineMode.Overview
@@ -356,21 +353,21 @@ function WorkTimeline() {
           showMajorLabels: timelineMode === WorkTimelineMode.Detailed,
         }))
       )
-      .flat();
+      .flat()
 
     // create backgrounds for weekends
     const min_date = timelineItems.reduce(
       (min, p) => (p.start < min ? p.start : min),
       timelineItems[0].start
-    );
+    )
     const max_date = timelineItems.reduce(
       (max, p) => (p.start > max ? p.start : max),
       timelineItems[0].start
-    );
+    )
     const weekdaysTimelineItems = getDatesArray(min_date, max_date)
-      .filter((date) => isWeekend(date))
-      .map((date) =>
-        timelineGroups.map((timelineGroup) => ({
+      .filter(date => isWeekend(date))
+      .map(date =>
+        timelineGroups.map(timelineGroup => ({
           start: removeTime(date),
           end: addDays(removeTime(date), 1),
           content: "",
@@ -381,14 +378,14 @@ function WorkTimeline() {
           showMajorLabels: false,
         }))
       )
-      .flat();
+      .flat()
 
     // create background for no activity times
     const itemsIntervals = _timelineData
       .filter(
-        (timelineItem) => timelineItem.type !== WorkTimelineItemType.UserStory
+        timelineItem => timelineItem.type !== WorkTimelineItemType.UserStory
       )
-      .map((timelineItem) => ({
+      .map(timelineItem => ({
         periodStart: timelineItem.events.reduce(
           (min, p) => (p.changedAt < min ? p.changedAt : min),
           timelineItem.events[0].changedAt
@@ -397,9 +394,9 @@ function WorkTimeline() {
           (max, p) => (p.changedAt > max ? p.changedAt : max),
           timelineItem.events[0].changedAt
         ),
-      }));
+      }))
     const intervalEvents = itemsIntervals
-      .map((itemInterval) => [
+      .map(itemInterval => [
         {
           datetime: itemInterval.periodStart,
           type: "start",
@@ -410,28 +407,28 @@ function WorkTimeline() {
         },
       ])
       .flat()
-      .sort((a, b) => (a.datetime > b.datetime ? 1 : -1));
+      .sort((a, b) => (a.datetime > b.datetime ? 1 : -1))
 
-    const inactivityWindows = [];
-    let overlappingCounter = 0;
+    const inactivityWindows = []
+    let overlappingCounter = 0
     for (let i = 0; i < intervalEvents.length - 1; i++) {
-      const intervalEvent = intervalEvents[i];
+      const intervalEvent = intervalEvents[i]
       if (intervalEvent.type === "start") {
-        overlappingCounter++;
+        overlappingCounter++
       } else {
-        overlappingCounter--;
+        overlappingCounter--
       }
       if (overlappingCounter === 0) {
         inactivityWindows.push({
           start: intervalEvent.datetime,
           end: intervalEvents[i + 1].datetime,
-        });
+        })
       }
     }
 
     const inactivityWindowsTimelineItems = inactivityWindows
       .filter(
-        (inactivityWindow) =>
+        inactivityWindow =>
           differenceInBusinnessHours(
             inactivityWindow.start,
             inactivityWindow.end,
@@ -439,8 +436,8 @@ function WorkTimeline() {
             avgWorkdayEndHour
           ) >= inactivityWindowInHours
       )
-      .map((inactivityWindow) =>
-        timelineGroups.map((timelineGroup) => ({
+      .map(inactivityWindow =>
+        timelineGroups.map(timelineGroup => ({
           start: inactivityWindow.start,
           end: inactivityWindow.end,
           content: "",
@@ -451,38 +448,38 @@ function WorkTimeline() {
           showMajorLabels: false,
         }))
       )
-      .flat();
+      .flat()
 
     // create background for long time not tested tasks
     const notTestedWindowsTimelineItems = _timelineData
-      .filter((timelineItem) =>
+      .filter(timelineItem =>
         [
           WorkTimelineItemType.Task,
           WorkTimelineItemType.Bug,
           WorkTimelineItemType.UserStory,
         ].includes(timelineItem.type)
       )
-      .map((timelineItem) => {
-        const notTestedWindows = [];
+      .map(timelineItem => {
+        const notTestedWindows = []
         const orderedEvents = timelineItem.events.sort((a, b) =>
           a.changedAt > b.changedAt ? 1 : -1
-        );
+        )
         for (let i = 0; i < orderedEvents.length - 1; i++) {
-          const event = orderedEvents[i];
+          const event = orderedEvents[i]
           if (event.event.toLocaleLowerCase().includes("qa")) {
-            const nextEvent = orderedEvents[i + 1];
+            const nextEvent = orderedEvents[i + 1]
             notTestedWindows.push({
               item: timelineItem,
               start: event.changedAt,
               end: nextEvent.changedAt,
-            });
+            })
           }
         }
-        return notTestedWindows;
+        return notTestedWindows
       })
       .flat()
       .filter(
-        (notTestedWindow) =>
+        notTestedWindow =>
           differenceInBusinnessHours(
             notTestedWindow.start,
             notTestedWindow.end,
@@ -490,7 +487,7 @@ function WorkTimeline() {
             avgWorkdayEndHour
           ) >= timeToTestInHours
       )
-      .map((notTestedWindow) => ({
+      .map(notTestedWindow => ({
         start: notTestedWindow.start,
         end: notTestedWindow.end,
         content: "",
@@ -499,25 +496,25 @@ function WorkTimeline() {
         type: "background",
         title: "Отсутствует активность в тестировании",
         showMajorLabels: false,
-      }));
+      }))
 
     // create background for long time not activity PRs
     const notActivityPRsTimelineItems = _timelineData
-      .filter((timelineItem) =>
+      .filter(timelineItem =>
         [WorkTimelineItemType.PR].includes(timelineItem.type)
       )
-      .map((timelineItem) => {
-        const items = [];
+      .map(timelineItem => {
+        const items = []
         const orderedEvents = timelineItem.events.sort((a, b) =>
           a.changedAt > b.changedAt ? 1 : -1
-        );
-        let lastPRActivity: WorkTimelineItemEvent | null = orderedEvents[0];
+        )
+        let lastPRActivity: WorkTimelineItemEvent | null = orderedEvents[0]
         for (let i = 0; i < orderedEvents.length; i++) {
-          const event = orderedEvents[i];
+          const event = orderedEvents[i]
           // Ищем след активность
           if (!lastPRActivity) {
             if (!event.event.toLocaleLowerCase().includes("voted")) {
-              lastPRActivity = event;
+              lastPRActivity = event
             }
           }
           // Произошло ревью
@@ -529,15 +526,15 @@ function WorkTimeline() {
               item: timelineItem,
               start: lastPRActivity.changedAt,
               end: event.changedAt,
-            });
-            lastPRActivity = null;
+            })
+            lastPRActivity = null
           }
         }
-        return items;
+        return items
       })
       .flat()
       .filter(
-        (noActivityPRWindow) =>
+        noActivityPRWindow =>
           differenceInBusinnessHours(
             noActivityPRWindow.start,
             noActivityPRWindow.end,
@@ -545,7 +542,7 @@ function WorkTimeline() {
             avgWorkdayEndHour
           ) >= timeToPRInHours
       )
-      .map((noActivityPRWindow) => ({
+      .map(noActivityPRWindow => ({
         start: noActivityPRWindow.start,
         end: noActivityPRWindow.end,
         content: "",
@@ -554,30 +551,30 @@ function WorkTimeline() {
         type: "background",
         title: "Отсутствует активность в ревью",
         showMajorLabels: false,
-      }));
+      }))
 
     // add all backgrounds to timeline items
-    timelineItems.push(...weekdaysTimelineItems);
+    timelineItems.push(...weekdaysTimelineItems)
     if (showInactivityWindows) {
-      timelineItems.push(...inactivityWindowsTimelineItems);
-      timelineItems.push(...notTestedWindowsTimelineItems);
-      timelineItems.push(...notActivityPRsTimelineItems);
+      timelineItems.push(...inactivityWindowsTimelineItems)
+      timelineItems.push(...notTestedWindowsTimelineItems)
+      timelineItems.push(...notActivityPRsTimelineItems)
     }
 
     // draw timeline
     const options = {
       start: min_date,
-    };
+    }
 
-    timeline?.destroy();
+    timeline?.destroy()
     const _timeline = new Timeline(
       document.getElementById("timeline") as HTMLElement,
       timelineItems,
       timelineGroups,
       options
-    );
-    setTimeline(_timeline);
-  };
+    )
+    setTimeline(_timeline)
+  }
 
   return (
     <div>
@@ -585,7 +582,7 @@ function WorkTimeline() {
       <Card>
         <input
           value={workItemId}
-          onChange={(e) => setWorkItemId(e.target.value)}
+          onChange={e => setWorkItemId(e.target.value)}
           placeholder={
             bugManagementMode === BugManagementMode.WithRequirement
               ? "User Story ID or Bug ID"
@@ -620,12 +617,12 @@ function WorkTimeline() {
           <div>
             <label>Вид таймлайна: </label>
             <select
-              onChange={(e) => {
+              onChange={e => {
                 setTimelineMode(
                   WorkTimelineMode[
                     e.target.value as keyof typeof WorkTimelineMode
                   ]
-                );
+                )
               }}
             >
               {getEnumKeys(WorkTimelineMode).map((key, index) => (
@@ -639,12 +636,12 @@ function WorkTimeline() {
           <div>
             <label>Режим работы с багами: </label>
             <select
-              onChange={(e) => {
+              onChange={e => {
                 setBugManagementMode(
                   BugManagementMode[
                     e.target.value as keyof typeof BugManagementMode
                   ]
-                );
+                )
               }}
             >
               {getEnumKeys(BugManagementMode).map((key, index) => (
@@ -660,7 +657,7 @@ function WorkTimeline() {
             <input
               type="checkbox"
               checked={showInactivityWindows}
-              onChange={(e) => setShowInactivityWindows(e.target.checked)}
+              onChange={e => setShowInactivityWindows(e.target.checked)}
             />
             <br />
             <label>Примерное время рабочего дня (в часах)</label>
@@ -668,22 +665,20 @@ function WorkTimeline() {
             <input
               type="number"
               value={avgWorkdayStartHour}
-              onChange={(e) => setAvgWorkdayStartHour(Number(e.target.value))}
+              onChange={e => setAvgWorkdayStartHour(Number(e.target.value))}
             />
             <label> до </label>
             <input
               type="number"
               value={avgWorkdayEndHour}
-              onChange={(e) => setAvgWorkdayEndHour(Number(e.target.value))}
+              onChange={e => setAvgWorkdayEndHour(Number(e.target.value))}
             />
             <br />
             <label>Отметить, если на таймлайне нет активности в течение </label>
             <input
               type="number"
               value={inactivityWindowInHours}
-              onChange={(e) =>
-                setInactivityWindowInHours(Number(e.target.value))
-              }
+              onChange={e => setInactivityWindowInHours(Number(e.target.value))}
             />
             <label> рабочих часов</label>
             <br />
@@ -691,7 +686,7 @@ function WorkTimeline() {
             <input
               type="number"
               value={timeToTestInHours}
-              onChange={(e) => setTimeToTestInHours(Number(e.target.value))}
+              onChange={e => setTimeToTestInHours(Number(e.target.value))}
             />
             <label> рабочих часов</label>
             <br />
@@ -699,7 +694,7 @@ function WorkTimeline() {
             <input
               type="number"
               value={timeToPRInHours}
-              onChange={(e) => setTimeToPRInHours(Number(e.target.value))}
+              onChange={e => setTimeToPRInHours(Number(e.target.value))}
             />
             <label> рабочих часов</label>
           </div>
@@ -714,7 +709,7 @@ function WorkTimeline() {
       <div id="timeline" />
       <NotificationLayer />
     </div>
-  );
+  )
 }
 
-export default WorkTimeline;
+export default WorkTimeline

@@ -1,15 +1,16 @@
-import { fetchAzure } from '../api';
 import {
   TeamMemberCapacity,
   TeamSetting,
   TeamSettingsDaysOff,
-} from 'azure-devops-extension-api/Work';
+} from "azure-devops-extension-api/Work"
+
+import { fetchAzure } from "../api"
 
 export type GetCapacityParams = {
-  projectId: string;
-  teamId: string;
-  iterationId: string;
-};
+  projectId: string
+  teamId: string
+  iterationId: string
+}
 export async function getCapacity({
   projectId,
   teamId,
@@ -18,7 +19,7 @@ export async function getCapacity({
   return fetchAzure(`/work/teamsettings/iterations/${iterationId}/capacities`, {
     projectId,
     teamId,
-  }).then((res: { teamMembers: TeamMemberCapacity[] }) => res.teamMembers);
+  }).then((res: { teamMembers: TeamMemberCapacity[] }) => res.teamMembers)
 }
 
 export async function getTeamDaysOff({
@@ -32,26 +33,26 @@ export async function getTeamDaysOff({
       projectId,
       teamId,
     }
-  ).then((res: TeamSettingsDaysOff) => res);
+  ).then((res: TeamSettingsDaysOff) => res)
 }
 
 const days = [
-  'sunday',
-  'monday',
-  'tuesday',
-  'wednesday',
-  'thursday',
-  'friday',
-  'saturday',
-];
+  "sunday",
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+]
 
 export type GetTeamSettings = {
-  projectId: string;
-};
+  projectId: string
+}
 export async function getTeamSettings({ projectId }: GetTeamSettings) {
   return fetchAzure(`/work/teamsettings`, {
     projectId,
   }).then((res: { workingDays: Array<string> }) =>
-    res.workingDays.map((item) => days.indexOf(item))
-  );
+    res.workingDays.map(item => days.indexOf(item))
+  )
 }

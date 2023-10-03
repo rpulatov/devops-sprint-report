@@ -1,10 +1,10 @@
-import React from 'react';
+import React from "react"
 
-import './TableContainer.css';
+import "./TableContainer.css"
 
 export type TableContainerProps = {
-  htmlIdElement: string;
-};
+  htmlIdElement: string
+}
 export function TableContainer({
   htmlIdElement,
   children,
@@ -13,5 +13,5 @@ export function TableContainer({
     <table className="table-container" id={htmlIdElement}>
       {children}
     </table>
-  );
+  )
 }

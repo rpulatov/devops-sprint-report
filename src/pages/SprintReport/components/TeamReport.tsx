@@ -1,57 +1,57 @@
-import { TeamMember } from '../../../domains/teammembers';
-import { WorkItemState } from '../../../domains/workItems';
-import { TeamReportRow, useTeamReport } from '../../../hooks/useTeamReport';
-import { TypeReport } from '../../../types/report';
-import { Table } from '../../../components/tables/Table';
-import { TableColumn } from '../../../components/tables/TableColumn';
+import { Table } from "../../../components/tables/Table"
+import { TableColumn } from "../../../components/tables/TableColumn"
+import { TeamMember } from "../../../domains/teammembers"
+import { WorkItemState } from "../../../domains/workItems"
+import { TeamReportRow, useTeamReport } from "../../../hooks/useTeamReport"
+import { TypeReport } from "../../../types/report"
 
 const calcPercentageLoad = (
-  item: Pick<TeamReportRow, 'capacity' | 'planEstimate'>
+  item: Pick<TeamReportRow, "capacity" | "planEstimate">
 ) => {
-  if (item.capacity <= 0) return '-';
-  const accuracy = (item.planEstimate * 100) / item.capacity - 100;
+  if (item.capacity <= 0) return "-"
+  const accuracy = (item.planEstimate * 100) / item.capacity - 100
 
   return accuracy === 0
     ? `идеально`
     : accuracy > 0
     ? `перегружен на ${accuracy.toFixed(0)}%`
-    : `недогружен на ${-accuracy.toFixed(0)}%`;
-};
+    : `недогружен на ${-accuracy.toFixed(0)}%`
+}
 
 const calcEstimationAccuracy = (
-  item: Pick<TeamReportRow, 'planEstimate' | 'planComplete' | 'planRemaining'>
+  item: Pick<TeamReportRow, "planEstimate" | "planComplete" | "planRemaining">
 ) => {
-  if (item.planEstimate <= 0) return '-';
+  if (item.planEstimate <= 0) return "-"
   const accuracy =
-    ((item.planComplete + item.planRemaining) * 100) / item.planEstimate - 100;
+    ((item.planComplete + item.planRemaining) * 100) / item.planEstimate - 100
 
   return accuracy === 0
     ? `идеально`
     : accuracy > 0
     ? `на ${accuracy.toFixed(0)}% дольше`
-    : `на ${-accuracy.toFixed(0)}% быстрее`;
-};
+    : `на ${-accuracy.toFixed(0)}% быстрее`
+}
 
 const calcPercentageProductivity = (
-  item: Pick<TeamReportRow, 'planComplete' | 'overplanComplete' | 'capacity'>
+  item: Pick<TeamReportRow, "planComplete" | "overplanComplete" | "capacity">
 ) => {
-  if (item.capacity <= 0) return '-';
+  if (item.capacity <= 0) return "-"
   const accuracy =
-    ((item.planComplete + item.overplanComplete) * 100) / item.capacity - 100;
+    ((item.planComplete + item.overplanComplete) * 100) / item.capacity - 100
 
   return accuracy === 0
     ? `идеально`
     : accuracy > 0
     ? `переработка ${accuracy.toFixed(0)}%`
-    : `недоработка ${-accuracy.toFixed(0)}%`;
-};
+    : `недоработка ${-accuracy.toFixed(0)}%`
+}
 
 type TeamReportProps = {
-  teamMembers: TeamMember[];
-  workItems: WorkItemState[];
-  typeReport: TypeReport;
-  htmlIdElement: string;
-};
+  teamMembers: TeamMember[]
+  workItems: WorkItemState[]
+  typeReport: TypeReport
+  htmlIdElement: string
+}
 
 export function TeamReport({
   teamMembers,
@@ -59,7 +59,7 @@ export function TeamReport({
   typeReport,
   htmlIdElement,
 }: TeamReportProps) {
-  const { teamReport, total } = useTeamReport({ workItems, teamMembers });
+  const { teamReport, total } = useTeamReport({ workItems, teamMembers })
 
   return (
     <Table data={teamReport} htmlIdElement={htmlIdElement}>
@@ -67,7 +67,7 @@ export function TeamReport({
         name="name"
         title="ФИО"
         className="noWrapColumn"
-        renderFooter={() => 'ИТОГО:'}
+        renderFooter={() => "ИТОГО:"}
       />
       <TableColumn
         name="capacity"
@@ -141,16 +141,16 @@ export function TeamReport({
                 ? (
                     (item.overplanComplete * 100) /
                     (item.planComplete + item.overplanComplete)
-                  ).toFixed(1) + '%'
-                : '-'
+                  ).toFixed(1) + "%"
+                : "-"
             }
             renderFooter={() =>
               total.planComplete + total.overplanComplete > 0
                 ? (
                     (total.overplanComplete * 100) /
                     (total.planComplete + total.overplanComplete)
-                  ).toFixed(1) + '%'
-                : '-'
+                  ).toFixed(1) + "%"
+                : "-"
             }
           />
         </>
@@ -180,5 +180,5 @@ export function TeamReport({
         </>
       ) : null}
     </Table>
-  );
+  )
 }

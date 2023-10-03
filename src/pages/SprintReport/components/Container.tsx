@@ -1,20 +1,19 @@
-import { TeamSettingsIteration } from "azure-devops-extension-api/Work";
-import { useTeamMembers } from "../../../hooks/useTeamMembers";
+import { TeamSettingsIteration } from "azure-devops-extension-api/Work"
 
-import { useWorkItems } from "../../../hooks/useWorkItems";
-import { useUserStoryReport } from "../hooks/useUserStoryReport";
-import { TypeReport } from "../../../types/report";
-
-import { TeamReport } from "./TeamReport";
-import { UserStoryReport } from "./UserStoryReport";
-import { FeatureReport } from "./FeatureReport";
+import { useTeamMembers } from "../../../hooks/useTeamMembers"
+import { useWorkItems } from "../../../hooks/useWorkItems"
+import { TypeReport } from "../../../types/report"
+import { useUserStoryReport } from "../hooks/useUserStoryReport"
+import { FeatureReport } from "./FeatureReport"
+import { TeamReport } from "./TeamReport"
+import { UserStoryReport } from "./UserStoryReport"
 
 type ContainerProps = {
-  projectId: string;
-  teamId: string;
-  iteration: TeamSettingsIteration;
-  typeReport: TypeReport;
-};
+  projectId: string
+  teamId: string
+  iteration: TeamSettingsIteration
+  typeReport: TypeReport
+}
 export function Container({
   projectId,
   teamId,
@@ -25,15 +24,15 @@ export function Container({
     iteration,
     projectId,
     teamId,
-  });
+  })
 
   const { workItems, completedStates } = useWorkItems({
     projectId,
     teamId,
     iterationPath: iteration.path,
-  });
+  })
 
-  const { userStories } = useUserStoryReport({ workItems, completedStates });
+  const { userStories } = useUserStoryReport({ workItems, completedStates })
 
   return (
     <div>
@@ -58,5 +57,5 @@ export function Container({
         htmlIdElement="feature-report"
       />
     </div>
-  );
+  )
 }

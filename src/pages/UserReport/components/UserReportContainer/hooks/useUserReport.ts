@@ -1,76 +1,78 @@
-import React from "react";
-import { IntervalOfWork } from "../../../../../types/report";
-import eachMonthOfInterval from "date-fns/eachMonthOfInterval";
-import { da, te } from "date-fns/locale";
-import addMonths from "date-fns/addMonths";
-import endOfMonth from "date-fns/endOfMonth";
-import eachWeekOfInterval from "date-fns/eachWeekOfInterval";
-import endOfWeek from "date-fns/endOfWeek";
-import eachDayOfInterval from "date-fns/eachDayOfInterval";
-import endOfDay from "date-fns/endOfDay";
-import { getIterationCapacities } from "../../../../../domains/iterations";
-import { TeamSettingsIteration } from "azure-devops-extension-api/Work";
-import { getTeamMembers } from "../../../../../domains/teammembers";
-import format from "date-fns/format";
-import startOfDay from "date-fns/startOfDay";
-import isWithinInterval from "date-fns/isWithinInterval";
-import mergeWith from "lodash/mergeWith";
+import React from "react"
+
+import { TeamSettingsIteration } from "azure-devops-extension-api/Work"
+import addMonths from "date-fns/addMonths"
+import eachDayOfInterval from "date-fns/eachDayOfInterval"
+import eachMonthOfInterval from "date-fns/eachMonthOfInterval"
+import eachWeekOfInterval from "date-fns/eachWeekOfInterval"
+import endOfDay from "date-fns/endOfDay"
+import endOfMonth from "date-fns/endOfMonth"
+import endOfWeek from "date-fns/endOfWeek"
+import format from "date-fns/format"
+import isWithinInterval from "date-fns/isWithinInterval"
+import { da, te } from "date-fns/locale"
+import startOfDay from "date-fns/startOfDay"
+import mergeWith from "lodash/mergeWith"
+
+import { getIterationCapacities } from "../../../../../domains/iterations"
+import { getTeamMembers } from "../../../../../domains/teammembers"
 import {
   getShortDataFromWorkItem,
   getWorkItemsByIteration,
-} from "../../../../../domains/workItems";
+} from "../../../../../domains/workItems"
+import { IntervalOfWork } from "../../../../../types/report"
 
 export type DateInterval = {
-  startDate: Date;
-  endDate: Date;
-};
+  startDate: Date
+  endDate: Date
+}
 
 export interface IterationAcrossProjects extends TeamSettingsIteration {
   project: {
-    id: string;
-    name: string;
-  };
+    id: string
+    name: string
+  }
 }
 
 export type WorkDayProject = {
   project: {
-    id: string;
-    name: string;
-  };
-  capacity: number;
-  completedWork: number;
-};
+    id: string
+    name: string
+  }
+  capacity: number
+  completedWork: number
+}
 
 export type TeamMemberWorkDay = {
-  date: Date;
+  date: Date
   projects: {
-    [projectId: string]: WorkDayProject;
-  };
-};
+    [projectId: string]: WorkDayProject
+  }
+}
 
 export type TeamMemberWorkDays = {
-  [workDayText: string]: TeamMemberWorkDay;
-};
+  [workDayText: string]: TeamMemberWorkDay
+}
 
 export type TeamMemberWithWorkDays = {
   teamMember: {
-    id: string;
-    name: string;
-  };
-  workDays: TeamMemberWorkDays;
-};
+    id: string
+    name: string
+  }
+  workDays: TeamMemberWorkDays
+}
 
 export type TeamMembersWithWorkDays = {
-  [teamMemberId: string]: TeamMemberWithWorkDays;
-};
+  [teamMemberId: string]: TeamMemberWithWorkDays
+}
 
 export type TeamMemberWithInterval = {
-  teamMember: { id: string; name: string };
-  intervals: { projects: WorkDayProject[]; startDate: Date; endDate: Date }[];
-};
+  teamMember: { id: string; name: string }
+  intervals: { projects: WorkDayProject[]; startDate: Date; endDate: Date }[]
+}
 
 function getDateId(date: Date) {
-  return format(date, "ddMMyyyy");
+  return format(date, "ddMMyyyy")
 }
 
 export function useUserReport() {
@@ -80,7 +82,7 @@ export function useUserReport() {
         return eachMonthOfInterval({
           start: dateRange.startDate,
           end: dateRange.endDate,
-        }).map((firstDayOfMonth) => ({
+        }).map(firstDayOfMonth => ({
           startDate:
             firstDayOfMonth < dateRange.startDate
               ? dateRange.startDate
@@ -89,7 +91,7 @@ export function useUserReport() {
             endOfMonth(firstDayOfMonth) > dateRange.endDate
               ? dateRange.endDate
               : endOfMonth(firstDayOfMonth),
-        }));
+        }))
       }
       if (intervalOfWork === IntervalOfWork.Week) {
         return eachWeekOfInterval(
@@ -98,7 +100,7 @@ export function useUserReport() {
             end: dateRange.endDate,
           },
           { weekStartsOn: 1 }
-        ).map((firstDayOfWeek) => ({
+        ).map(firstDayOfWeek => ({
           startDate:
             firstDayOfWeek < dateRange.startDate
               ? dateRange.startDate
@@ -107,22 +109,22 @@ export function useUserReport() {
             endOfWeek(firstDayOfWeek, { weekStartsOn: 1 }) > dateRange.endDate
               ? dateRange.endDate
               : endOfWeek(firstDayOfWeek, { weekStartsOn: 1 }),
-        }));
+        }))
       }
 
       if (intervalOfWork === IntervalOfWork.Day) {
         return eachDayOfInterval({
           start: dateRange.startDate,
           end: dateRange.endDate,
-        }).map((startOfDay) => ({
+        }).map(startOfDay => ({
           startDate: startOfDay,
           endDate: endOfDay(startOfDay),
-        }));
+        }))
       }
-      return [] as DateInterval[];
+      return [] as DateInterval[]
     },
     []
-  );
+  )
 
   // на входе: итерация проекта
   // на выходе: по каждому члену команды даты рабочих дней, в каждом рабочем дне capacity и completedWork по проекту
@@ -131,13 +133,13 @@ export function useUserReport() {
       const { teams } = await getIterationCapacities({
         projectId: iteration.project.id,
         iterationId: iteration.id,
-      });
+      })
 
       const teamMembers = await Promise.all(
         teams.map(({ teamId }) =>
           getTeamMembers({ iteration, projectId: iteration.project.id, teamId })
         )
-      ).then((res) => res.flat());
+      ).then(res => res.flat())
 
       const workItems = await Promise.all(
         teams.map(({ teamId }) =>
@@ -147,42 +149,42 @@ export function useUserReport() {
             teamId,
           })
         )
-      ).then((res) => res.flat().map(getShortDataFromWorkItem()));
+      ).then(res => res.flat().map(getShortDataFromWorkItem()))
 
       const workItemsAggregate = workItems.reduce<{
         [teamMemberId: string]: {
-          completedWork: number;
-          originalEstimate: number;
-          remainingWork: number;
-        };
+          completedWork: number
+          originalEstimate: number
+          remainingWork: number
+        }
       }>((prev, cur) => {
-        if (!cur.assignedTo) return prev;
+        if (!cur.assignedTo) return prev
         if (!prev[cur.assignedTo.id]) {
-          cur.completedWork;
+          cur.completedWork
           prev[cur.assignedTo.id] = {
             completedWork: cur.completedWork,
             originalEstimate: cur.originalEstimate,
             remainingWork: cur.remainingWork,
-          };
+          }
         } else {
-          prev[cur.assignedTo.id].completedWork += cur.completedWork;
-          prev[cur.assignedTo.id].originalEstimate += cur.originalEstimate;
-          prev[cur.assignedTo.id].remainingWork += cur.remainingWork;
+          prev[cur.assignedTo.id].completedWork += cur.completedWork
+          prev[cur.assignedTo.id].originalEstimate += cur.originalEstimate
+          prev[cur.assignedTo.id].remainingWork += cur.remainingWork
         }
-        return prev;
-      }, {});
+        return prev
+      }, {})
 
       const teamMembersWithWorkDays =
         teamMembers.reduce<TeamMembersWithWorkDays>(
           (prevTeamMembers, teamMember) => {
-            if (!teamMember.workDays.length) return prevTeamMembers;
+            if (!teamMember.workDays.length) return prevTeamMembers
 
             const completedWorkPerDay =
               (workItemsAggregate[teamMember.id]?.completedWork ?? 0) /
-              teamMember.workDays.length;
+              teamMember.workDays.length
 
             if (teamMember.capacityPerDay === 0 && completedWorkPerDay === 0)
-              return prevTeamMembers;
+              return prevTeamMembers
 
             const workDays = teamMember.workDays.reduce<TeamMemberWorkDays>(
               (prevWorkDays, day) => {
@@ -195,11 +197,11 @@ export function useUserReport() {
                       completedWork: completedWorkPerDay,
                     },
                   },
-                };
-                return prevWorkDays;
+                }
+                return prevWorkDays
               },
               {}
-            );
+            )
 
             prevTeamMembers[teamMember.id] = {
               teamMember: {
@@ -207,16 +209,16 @@ export function useUserReport() {
                 name: teamMember.name,
               },
               workDays,
-            };
-            return prevTeamMembers;
+            }
+            return prevTeamMembers
           },
           {}
-        );
+        )
 
-      return teamMembersWithWorkDays;
+      return teamMembersWithWorkDays
     },
     []
-  );
+  )
 
   // укладываем дневную работу членов команд в интервалы и суммируем показатели
   const joinTeamMembersWithIntervals = React.useCallback(
@@ -224,12 +226,12 @@ export function useUserReport() {
       teamMembers: TeamMembersWithWorkDays,
       intervals: DateInterval[]
     ): TeamMemberWithInterval[] => {
-      return Object.values(teamMembers).map((teamMember) => {
-        const workDaysOfTeamMember = Object.values(teamMember.workDays);
+      return Object.values(teamMembers).map(teamMember => {
+        const workDaysOfTeamMember = Object.values(teamMember.workDays)
 
         return {
           teamMember: teamMember.teamMember,
-          intervals: intervals.map((interval) => {
+          intervals: intervals.map(interval => {
             return {
               ...interval,
               projects: Object.values(
@@ -241,7 +243,7 @@ export function useUserReport() {
                         end: interval.endDate,
                       })
                     ) {
-                      return prevProjects;
+                      return prevProjects
                     }
                     return mergeWith(
                       prevProjects,
@@ -258,22 +260,22 @@ export function useUserReport() {
                                 prevValue.completedWork + value.completedWork,
                               capacity: prevValue.capacity + value.capacity,
                             }
-                    );
+                    )
                   },
                   {}
                 )
               ),
-            };
+            }
           }),
-        };
-      });
+        }
+      })
     },
     []
-  );
+  )
 
   return {
     generateWorkIntervals,
     getUserReportByIteration,
     joinTeamMembersWithIntervals,
-  };
+  }
 }

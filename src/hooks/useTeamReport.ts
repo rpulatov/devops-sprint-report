@@ -1,25 +1,26 @@
-import { useMemo } from 'react';
-import { TeamMember } from '../domains/teammembers';
-import { WorkItemState } from '../domains/workItems';
+import { useMemo } from "react"
+
+import { TeamMember } from "../domains/teammembers"
+import { WorkItemState } from "../domains/workItems"
 
 export type TeamReportRow = {
-  id: string;
-  name: string;
-  capacity: number;
-  planEstimate: number;
-  planComplete: number;
-  planRemaining: number;
-  overplanEstimate: number;
-  overplanComplete: number;
-  overplanRemaining: number;
-};
+  id: string
+  name: string
+  capacity: number
+  planEstimate: number
+  planComplete: number
+  planRemaining: number
+  overplanEstimate: number
+  overplanComplete: number
+  overplanRemaining: number
+}
 
 export function useTeamReport({
   workItems,
   teamMembers,
 }: {
-  workItems: WorkItemState[];
-  teamMembers: TeamMember[];
+  workItems: WorkItemState[]
+  teamMembers: TeamMember[]
 }) {
   const teamReport = useMemo(() => {
     const teamReportObj = teamMembers.reduce(
@@ -33,41 +34,41 @@ export function useTeamReport({
             overplanEstimate: 0,
             overplanComplete: 0,
             overplanRemaining: 0,
-          };
-        return acc;
+          }
+        return acc
       },
       {}
-    );
+    )
 
     for (const item of workItems) {
-      const linkToTeamReportRow = teamReportObj[item?.assignedTo?.id];
-      if (!linkToTeamReportRow) continue;
+      const linkToTeamReportRow = teamReportObj[item?.assignedTo?.id]
+      if (!linkToTeamReportRow) continue
       if (item.overplan) {
-        linkToTeamReportRow.overplanEstimate += item.originalEstimate;
-        linkToTeamReportRow.overplanRemaining += item.remainingWork;
-        linkToTeamReportRow.overplanComplete += item.completedWork;
+        linkToTeamReportRow.overplanEstimate += item.originalEstimate
+        linkToTeamReportRow.overplanRemaining += item.remainingWork
+        linkToTeamReportRow.overplanComplete += item.completedWork
       } else {
-        linkToTeamReportRow.planEstimate += item.originalEstimate;
-        linkToTeamReportRow.planRemaining += item.remainingWork;
-        linkToTeamReportRow.planComplete += item.completedWork;
+        linkToTeamReportRow.planEstimate += item.originalEstimate
+        linkToTeamReportRow.planRemaining += item.remainingWork
+        linkToTeamReportRow.planComplete += item.completedWork
       }
     }
 
-    return Object.values(teamReportObj);
-  }, [workItems, teamMembers]);
+    return Object.values(teamReportObj)
+  }, [workItems, teamMembers])
 
   const total = useMemo(
     () =>
       teamReport.reduce(
         (acc, item) => {
-          acc.capacity += item.capacity;
-          acc.planEstimate += item.planEstimate;
-          acc.planComplete += item.planComplete;
-          acc.planRemaining += item.planRemaining;
-          acc.overplanComplete += item.overplanComplete;
-          acc.overplanEstimate += item.overplanEstimate;
-          acc.overplanRemaining += item.overplanRemaining;
-          return acc;
+          acc.capacity += item.capacity
+          acc.planEstimate += item.planEstimate
+          acc.planComplete += item.planComplete
+          acc.planRemaining += item.planRemaining
+          acc.overplanComplete += item.overplanComplete
+          acc.overplanEstimate += item.overplanEstimate
+          acc.overplanRemaining += item.overplanRemaining
+          return acc
         },
         {
           capacity: 0,
@@ -83,7 +84,7 @@ export function useTeamReport({
         }
       ),
     [teamReport]
-  );
+  )
 
-  return { teamReport, total };
+  return { teamReport, total }
 }

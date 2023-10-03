@@ -1,4 +1,4 @@
-const URI = 'data:application/vnd.ms-excel;base64,';
+const URI = "data:application/vnd.ms-excel;base64,"
 const TEMPLATE = `<html
                     xmlns:o="urn:schemas-microsoft-com:office:office"
                     xmlns:x="urn:schemas-microsoft-com:office:excel"
@@ -26,23 +26,23 @@ const TEMPLATE = `<html
                         {table}
                       </table>
                     </body>
-                  </html>`;
+                  </html>`
 
 function base64(s: string) {
-  return btoa(unescape(encodeURIComponent(s)));
+  return btoa(unescape(encodeURIComponent(s)))
 }
 
-type TableContext = { [key: string]: string };
+type TableContext = { [key: string]: string }
 function format(s: string, tableContext: TableContext) {
   return s.replace(/{(\w+)}/g, function (m, word: string) {
-    return tableContext[word];
-  });
+    return tableContext[word]
+  })
 }
 function downloadURI(uri: string, name: string) {
-  const link = document.createElement('a');
-  link.download = name;
-  link.href = uri;
-  link.click();
+  const link = document.createElement("a")
+  link.download = name
+  link.href = uri
+  link.click()
 }
 
 export function tableToExcel(
@@ -51,14 +51,14 @@ export function tableToExcel(
   fileName: string
 ) {
   const tableElement =
-    table instanceof HTMLElement ? table : document.getElementById(table);
+    table instanceof HTMLElement ? table : document.getElementById(table)
 
-  if (!tableElement) throw new Error(`Element ${table} not found`);
+  if (!tableElement) throw new Error(`Element ${table} not found`)
 
   const ctx = {
-    worksheet: name || 'Worksheet',
+    worksheet: name || "Worksheet",
     table: tableElement.innerHTML,
-  };
-  const resuri = URI + base64(format(TEMPLATE, ctx));
-  downloadURI(resuri, fileName);
+  }
+  const resuri = URI + base64(format(TEMPLATE, ctx))
+  downloadURI(resuri, fileName)
 }

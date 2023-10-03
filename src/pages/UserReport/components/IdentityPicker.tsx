@@ -1,15 +1,16 @@
-import { ObservableValue } from "azure-devops-ui/Core/Observable";
+import * as React from "react"
+
+import { ObservableValue } from "azure-devops-ui/Core/Observable"
 import {
-  IdentityPickerDropdown,
   IIdentity,
   IPeoplePickerProvider,
   IPersonaConnections,
-} from "azure-devops-ui/IdentityPicker";
-import * as React from "react";
+  IdentityPickerDropdown,
+} from "azure-devops-ui/IdentityPicker"
 
 export default class IdentityPicker extends React.Component {
-  private pickerProvider = new IdentityPickerProvider();
-  private value = new ObservableValue<IIdentity | undefined>(undefined);
+  private pickerProvider = new IdentityPickerProvider()
+  private value = new ObservableValue<IIdentity | undefined>(undefined)
   public render() {
     return (
       <IdentityPickerDropdown
@@ -17,16 +18,16 @@ export default class IdentityPicker extends React.Component {
         pickerProvider={this.pickerProvider}
         value={this.value}
       />
-    );
+    )
   }
 
   private onChange = (identity?: IIdentity) => {
-    this.value.value = identity;
-  };
+    this.value.value = identity
+  }
 }
 
 class IdentityPickerProvider implements IPeoplePickerProvider {
-  private currentPersonas: IIdentity[] = [];
+  private currentPersonas: IIdentity[] = []
 
   private bosses: IIdentity[] = [
     {
@@ -37,7 +38,7 @@ class IdentityPickerProvider implements IPeoplePickerProvider {
       originDirectory: "aad",
       originId: "",
     },
-  ];
+  ]
 
   private personas: IIdentity[] = [
     this.getSampleEntity("Julie Runkle", "Runkle@microsoft.com"),
@@ -55,17 +56,17 @@ class IdentityPickerProvider implements IPeoplePickerProvider {
     this.getSampleEntity("Walter Sunday", "Sunday@microsoft.com"),
     this.getSampleEntity("Elisa Caylor", "Caylor@microsoft.com"),
     this.getSampleEntity("Korey Fredrickson", "Fredrickson@microsoft.com"),
-  ];
+  ]
 
-  private allEmployees: IIdentity[] = this.personas.concat(this.bosses);
+  private allEmployees: IIdentity[] = this.personas.concat(this.bosses)
 
   public onFilterIdentities(filter: string, selectedItems?: IIdentity[]) {
-    return this.getPersonaList(filter, selectedItems);
+    return this.getPersonaList(filter, selectedItems)
   }
 
   public getEntityFromUniqueAttribute = (entityId: string): IIdentity => {
-    return this.allEmployees.filter((x) => x.entityId === entityId)[0];
-  };
+    return this.allEmployees.filter(x => x.entityId === entityId)[0]
+  }
 
   public onRequestConnectionInformation = (
     entity: IIdentity,
@@ -79,15 +80,15 @@ class IdentityPickerProvider implements IPeoplePickerProvider {
       : {
           directReports: getDirectReports ? [] : undefined,
           managers: this.bosses,
-        };
-  };
+        }
+  }
 
   public onEmptyInputFocus(): IIdentity[] {
     return [
       this.getSampleEntity("Julie Runkle", "Runkle@microsoft.com"),
       this.getSampleEntity("Aletha Fasano", "Fasano@microsoft.com"),
       this.getSampleEntity("Marcell Linville", "Linville@microsoft.com"),
-    ];
+    ]
   }
 
   private getSampleEntity(displayName: string, mail: string): IIdentity {
@@ -100,7 +101,7 @@ class IdentityPickerProvider implements IPeoplePickerProvider {
       originId: "",
       physicalDeliveryOfficeName: "123 Seasame Street",
       telephoneNumber: "555-5555",
-    } as IIdentity;
+    } as IIdentity
   }
 
   // Simulate initial request delay when the user first tries to grab a list
@@ -109,27 +110,27 @@ class IdentityPickerProvider implements IPeoplePickerProvider {
     selectedItems?: IIdentity[]
   ): Promise<IIdentity[]> | IIdentity[] {
     if (this.currentPersonas.length > 0) {
-      return this.filterList(filter, selectedItems);
+      return this.filterList(filter, selectedItems)
     } else {
       return new Promise<IIdentity[]>((resolve, reject) =>
         setTimeout(() => {
-          this.currentPersonas = this.personas;
-          resolve(this.filterList(filter, selectedItems));
+          this.currentPersonas = this.personas
+          resolve(this.filterList(filter, selectedItems))
         }, 800)
-      );
+      )
     }
   }
 
   private filterList(filter: string, selectedItems?: IIdentity[]) {
     if (filter === "") {
-      return this.onEmptyInputFocus();
+      return this.onEmptyInputFocus()
     }
     return this.currentPersonas.filter(
-      (x) =>
+      x =>
         (selectedItems === undefined || selectedItems.indexOf(x) === -1) &&
         ((x.displayName &&
           x.displayName.toLowerCase().indexOf(filter.toLowerCase()) !== -1) ||
           (x.mail && x.mail.toLowerCase().indexOf(filter.toLowerCase()) !== -1))
-    );
+    )
   }
 }

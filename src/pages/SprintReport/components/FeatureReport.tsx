@@ -1,17 +1,17 @@
-import { useMemo } from "react";
+import { useMemo } from "react"
 
-import { TypeReport } from "../../../types/report";
-import { Table } from "../../../components/tables/Table";
-import { TableColumn } from "../../../components/tables/TableColumn";
-import { UserStoryReportItem } from "../hooks/useUserStoryReport";
+import { Table } from "../../../components/tables/Table"
+import { TableColumn } from "../../../components/tables/TableColumn"
+import { TypeReport } from "../../../types/report"
+import { UserStoryReportItem } from "../hooks/useUserStoryReport"
 
 type FeatureReportItem = {
-  id: number;
-  name: string;
-  planEstimate: number;
-  planComplete: number;
-  overplanComplete: number;
-};
+  id: number
+  name: string
+  planEstimate: number
+  planComplete: number
+  overplanComplete: number
+}
 
 function createFeatureReportItem(id: number, name: string): FeatureReportItem {
   return {
@@ -20,14 +20,14 @@ function createFeatureReportItem(id: number, name: string): FeatureReportItem {
     planEstimate: 0,
     planComplete: 0,
     overplanComplete: 0,
-  };
+  }
 }
 
 type FeatureReportProps = {
-  userStories: UserStoryReportItem[];
-  typeReport: TypeReport;
-  htmlIdElement: string;
-};
+  userStories: UserStoryReportItem[]
+  typeReport: TypeReport
+  htmlIdElement: string
+}
 export function FeatureReport({
   userStories,
   typeReport,
@@ -38,28 +38,28 @@ export function FeatureReport({
       planEstimate: 0,
       planComplete: 0,
       overplanComplete: 0,
-    };
+    }
 
     const featuresMap = userStories.reduce((map, item) => {
-      if (!item.parentWorkItemId) return map;
+      if (!item.parentWorkItemId) return map
       const feature: FeatureReportItem =
         map.get(item.parentWorkItemId) ??
-        createFeatureReportItem(item.parentWorkItemId, item.parentName);
+        createFeatureReportItem(item.parentWorkItemId, item.parentName)
 
-      feature.planEstimate += item.planEstimate;
-      feature.planComplete += item.planComplete;
-      feature.overplanComplete += item.overplanComplete;
+      feature.planEstimate += item.planEstimate
+      feature.planComplete += item.planComplete
+      feature.overplanComplete += item.overplanComplete
 
-      total.planEstimate += item.planEstimate;
-      total.planComplete += item.planComplete;
-      total.overplanComplete += item.overplanComplete;
+      total.planEstimate += item.planEstimate
+      total.planComplete += item.planComplete
+      total.overplanComplete += item.overplanComplete
 
-      map.set(feature.id, feature);
+      map.set(feature.id, feature)
 
-      return map;
-    }, new Map<number, FeatureReportItem>());
+      return map
+    }, new Map<number, FeatureReportItem>())
 
-    const data = [...featuresMap.values()].map((feature) => ({
+    const data = [...featuresMap.values()].map(feature => ({
       id: feature.id,
       name: feature.name,
       planEstimate: feature.planEstimate,
@@ -75,15 +75,15 @@ export function FeatureReport({
               (total.planComplete + total.overplanComplete)
             ).toFixed(1) + "%"
           : "-",
-    }));
+    }))
 
-    data.sort((a, b) => b.planEstimate - a.planEstimate);
+    data.sort((a, b) => b.planEstimate - a.planEstimate)
 
     return {
       data,
       total,
-    };
-  }, [userStories]);
+    }
+  }, [userStories])
 
   return (
     <Table data={data} htmlIdElement={htmlIdElement}>
@@ -125,5 +125,5 @@ export function FeatureReport({
         />
       ) : null}
     </Table>
-  );
+  )
 }

@@ -1,17 +1,18 @@
-import { fetchAzure } from "../api";
-import { TeamSettingsIteration } from "azure-devops-extension-api/Work";
+import { TeamSettingsIteration } from "azure-devops-extension-api/Work"
 
-export type GetIterationsParams = { projectId: string };
+import { fetchAzure } from "../api"
+
+export type GetIterationsParams = { projectId: string }
 export async function getIterations({ projectId }: GetIterationsParams) {
   return fetchAzure("/work/teamsettings/iterations", { projectId }).then(
     (res: { count: number; value: TeamSettingsIteration[] }) => res.value
-  );
+  )
 }
 
 export type GetIterationCapacitiesProps = {
-  projectId: string;
-  iterationId: string;
-};
+  projectId: string
+  iterationId: string
+}
 export async function getIterationCapacities({
   projectId,
   iterationId,
@@ -22,13 +23,13 @@ export async function getIterationCapacities({
     (res: {
       teams: [
         {
-          teamId: string;
-          teamCapacityPerDay: number;
-          teamTotalDaysOff: number;
-        }
-      ];
-      totalIterationCapacityPerDay: number;
-      totalIterationDaysOff: number;
+          teamId: string
+          teamCapacityPerDay: number
+          teamTotalDaysOff: number
+        },
+      ]
+      totalIterationCapacityPerDay: number
+      totalIterationDaysOff: number
     }) => res
-  );
+  )
 }

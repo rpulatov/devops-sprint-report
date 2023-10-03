@@ -1,11 +1,12 @@
-import { useNavigate } from "react-router-dom";
-import { Button } from "azure-devops-ui/Button";
+import { useNavigate } from "react-router-dom"
 
-import "./Home.css";
-import { LogoutButton } from "../../components/LogoutButton";
+import { Button } from "azure-devops-ui/Button"
+
+import { LogoutButton } from "../../components/LogoutButton"
+import "./Home.css"
 
 function Home() {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
   return (
     <div className="homepage">
       <span className="homepage_title">Azure devops extensions</span>
@@ -31,7 +32,7 @@ function Home() {
       <hr />
       <LogoutButton />
     </div>
-  );
+  )
 }
 
-export default Home;
+export default Home

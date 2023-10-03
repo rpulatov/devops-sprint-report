@@ -1,7 +1,8 @@
-import React from "react";
+import React from "react"
 
-import "./NoMatch.css";
-import { Link } from "react-router-dom";
+import { Link } from "react-router-dom"
+
+import "./NoMatch.css"
 
 export default function NoMatch() {
   return (
@@ -10,5 +11,5 @@ export default function NoMatch() {
       <h1>404</h1>
       <Link to="/">На главную</Link>
     </div>
-  );
+  )
 }

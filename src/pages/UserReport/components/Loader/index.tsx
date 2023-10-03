@@ -1,7 +1,8 @@
-import React from "react";
-import { Spinner, SpinnerSize } from "azure-devops-ui/Spinner";
+import React from "react"
 
-import "./Loader.css";
+import { Spinner, SpinnerSize } from "azure-devops-ui/Spinner"
+
+import "./Loader.css"
 
 export function Loader() {
   return (
@@ -9,5 +10,5 @@ export function Loader() {
       <span>Подготовка данных...</span>
       <Spinner size={SpinnerSize.large} />
     </div>
-  );
+  )
 }

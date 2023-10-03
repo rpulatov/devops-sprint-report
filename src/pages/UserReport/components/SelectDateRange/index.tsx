@@ -1,15 +1,16 @@
-import React from "react";
-import { TextField, TextFieldWidth } from "azure-devops-ui/TextField";
+import React from "react"
 
-import "./SelectDateRange.css";
+import { TextField, TextFieldWidth } from "azure-devops-ui/TextField"
+
+import "./SelectDateRange.css"
 
 type SelectDateRangeProps = {
-  minDate: string;
-  maxDate: string;
-  startDate: string;
-  endDate: string;
-  onChange: (startDate: string, endDate: string) => void;
-};
+  minDate: string
+  maxDate: string
+  startDate: string
+  endDate: string
+  onChange: (startDate: string, endDate: string) => void
+}
 export default function SelectDateRange({
   minDate,
   maxDate,
@@ -19,19 +20,19 @@ export default function SelectDateRange({
 }: SelectDateRangeProps) {
   const refStartDate = React.useRef<HTMLTextAreaElement & HTMLInputElement>(
     null
-  );
-  const refEndDate = React.useRef<HTMLTextAreaElement & HTMLInputElement>(null);
+  )
+  const refEndDate = React.useRef<HTMLTextAreaElement & HTMLInputElement>(null)
 
   React.useEffect(() => {
     if (minDate && refStartDate.current && refEndDate.current) {
-      refStartDate.current.min = minDate;
-      refStartDate.current.max = maxDate;
+      refStartDate.current.min = minDate
+      refStartDate.current.max = maxDate
     }
     if (maxDate && refStartDate.current && refEndDate.current) {
-      refEndDate.current.min = minDate;
-      refEndDate.current.max = maxDate;
+      refEndDate.current.min = minDate
+      refEndDate.current.max = maxDate
     }
-  }, [minDate, maxDate]);
+  }, [minDate, maxDate])
 
   return (
     <div className="select-daterange">
@@ -55,5 +56,5 @@ export default function SelectDateRange({
         inputElement={refEndDate}
       />
     </div>
-  );
+  )
 }

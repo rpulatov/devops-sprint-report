@@ -1,15 +1,15 @@
-import { useMemo } from "react";
+import { useMemo } from "react"
 
-import { TypeReport } from "../../../types/report";
-import { Table } from "../../../components/tables/Table";
-import { TableColumn } from "../../../components/tables/TableColumn";
-import { UserStoryReportItem } from "../hooks/useUserStoryReport";
+import { Table } from "../../../components/tables/Table"
+import { TableColumn } from "../../../components/tables/TableColumn"
+import { TypeReport } from "../../../types/report"
+import { UserStoryReportItem } from "../hooks/useUserStoryReport"
 
 type UserStoryReportProps = {
-  userStories: UserStoryReportItem[];
-  typeReport: TypeReport;
-  htmlIdElement: string;
-};
+  userStories: UserStoryReportItem[]
+  typeReport: TypeReport
+  htmlIdElement: string
+}
 export function UserStoryReport({
   userStories,
   typeReport,
@@ -19,15 +19,15 @@ export function UserStoryReport({
     () =>
       userStories.reduce(
         (acc, item) => {
-          acc.planComplete += item.planComplete;
-          acc.overplanComplete += item.overplanComplete;
-          acc.overplanEstimate += item.overplanEstimate;
-          acc.planEstimate += item.planEstimate;
-          acc.planRemaining += item.planRemaining;
-          acc.overplanRemaining += item.overplanRemaining;
-          acc.countClosed += item.isClosed ? 1 : 0;
+          acc.planComplete += item.planComplete
+          acc.overplanComplete += item.overplanComplete
+          acc.overplanEstimate += item.overplanEstimate
+          acc.planEstimate += item.planEstimate
+          acc.planRemaining += item.planRemaining
+          acc.overplanRemaining += item.overplanRemaining
+          acc.countClosed += item.isClosed ? 1 : 0
 
-          return acc;
+          return acc
         },
         {
           planEstimate: 0,
@@ -40,7 +40,7 @@ export function UserStoryReport({
         }
       ),
     [userStories]
-  );
+  )
 
   return (
     <>
@@ -178,5 +178,5 @@ export function UserStoryReport({
         </table>
       )}
     </>
-  );
+  )
 }

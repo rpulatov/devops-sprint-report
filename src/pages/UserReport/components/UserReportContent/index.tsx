@@ -7,9 +7,19 @@ import { Pill, PillSize, PillVariant } from "azure-devops-ui/Pill";
 
 import "./UserReportContent.css";
 
-type UserReportContentProps = { teamMembers?: TeamMemberWithInterval[] };
+type UserReportContentProps = {
+  teamMembers?: TeamMemberWithInterval[];
+  projectColors: {
+    [projectId: string]: {
+      red: number;
+      green: number;
+      blue: number;
+    };
+  };
+};
 export function UserReportContent({
   teamMembers = [],
+  projectColors,
 }: UserReportContentProps) {
   return (
     <div className="user-report-content_container">
@@ -35,25 +45,48 @@ export function UserReportContent({
           <div className="user-report-content_col">
             {teamMember.teamMember.name}
           </div>
-          {teamMember.intervals.map((interval) => (
-            <div
-              className="user-report-content_col"
-              key={format(interval.startDate, "ddMMyyyy")}
-            >
-              {interval.projects.map(({ project, capacity, completedWork }) => (
+          {teamMember.intervals.map((interval) => {
+            const summary = interval.projects.reduce(
+              (acc, cur) => {
+                acc.capacity += cur.capacity;
+                acc.completedWork += cur.completedWork;
+                return acc;
+              },
+              { capacity: 0, completedWork: 0 }
+            );
+            return (
+              <div
+                className="user-report-content_col"
+                key={format(interval.startDate, "ddMMyyyy")}
+              >
+                <div className="user-report-content_col-items">
+                  {interval.projects.map(
+                    ({ project, capacity, completedWork }) => (
+                      <Pill
+                        color={projectColors[project.id]}
+                        size={PillSize.large}
+                        variant={PillVariant.colored}
+                        className="user-report-content_project"
+                        key={project.id}
+                      >
+                        {project.name} -{" "}
+                        {capacity > 0 ? capacity.toFixed(1) : 0} |{" "}
+                        {completedWork > 0 ? completedWork.toFixed(1) : 0}
+                      </Pill>
+                    )
+                  )}
+                </div>
                 <Pill
-                  color={{ red: 151, green: 30, blue: 79 }}
                   size={PillSize.large}
-                  variant={PillVariant.colored}
+                  variant={PillVariant.standard}
                   className="user-report-content_project"
-                  key={project.id}
                 >
-                  {project.name} - {capacity}/
-                  {completedWork > 0 ? completedWork.toFixed(1) : 0}
+                  Всего: {summary.capacity.toFixed(1)} |{" "}
+                  {summary.completedWork.toFixed(1)}
                 </Pill>
-              ))}
-            </div>
-          ))}
+              </div>
+            );
+          })}
         </Card>
       ))}
     </div>

@@ -12,6 +12,7 @@ import { Loader } from "./components/Loader";
 import { UserReportContainer } from "./components/UserReportContainer";
 import { UserReportContent } from "./components/UserReportContent";
 import { IterationAcrossProjects } from "./components/UserReportContainer/hooks/useUserReport";
+import { colors } from "./utils/colors";
 
 export const USER_REPORT_TITLE = "Отчет по сотруднику";
 
@@ -23,6 +24,19 @@ export default function UserReport() {
   );
 
   const { projects } = useProjects();
+
+  const projectColors = React.useMemo(
+    () =>
+      projects.reduce<{
+        [projectId: string]: { red: number; green: number; blue: number };
+      }>((acc, cur, index) => {
+        const [red, green, blue] =
+          colors[index < colors.length ? index : colors.length - 1];
+        acc[cur.id] = { red, green, blue };
+        return acc;
+      }, {}),
+    [projects]
+  );
 
   React.useEffect(() => {
     if (!projects.length) return undefined;
@@ -58,7 +72,7 @@ export default function UserReport() {
       {loading ? <Loader /> : null}
       {iterations.length > 0 ? (
         <UserReportContainer iterations={iterations} projects={projects}>
-          <UserReportContent />
+          <UserReportContent projectColors={projectColors} />
         </UserReportContainer>
       ) : null}
     </Page>

@@ -1,11 +1,8 @@
-#root {
-  width: 100%;
-}
-
 body,
 html {
   font-family: arial, sans-serif;
   font-size: 12px;
+  display: block;
 }
 
 * {

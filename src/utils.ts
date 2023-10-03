@@ -1,4 +1,15 @@
-import { isSameDay, differenceInHours, differenceInBusinessDays } from 'date-fns';
+import {
+  isSameDay,
+  differenceInHours,
+  differenceInBusinessDays,
+} from "date-fns";
+import setDefaultOptions from "date-fns/esm/setDefaultOptions";
+import format from "date-fns/format";
+import isSameMonth from "date-fns/isSameMonth";
+import isSameYear from "date-fns/isSameYear";
+
+import { ru } from "date-fns/locale";
+setDefaultOptions({ locale: ru });
 
 export function diffInDays(date1: string | Date, date2: string | Date) {
   const dateObj1 = new Date(date1);
@@ -22,7 +33,7 @@ export function diffInDays(date1: string | Date, date2: string | Date) {
 function dateToFormat(date: Date) {
   const offset = date.getTimezoneOffset();
   const updatedDate = new Date(date.getTime() - offset * 60 * 1000);
-  return updatedDate.toISOString().split('T')[0];
+  return updatedDate.toISOString().split("T")[0];
 }
 
 function addDays(date: Date, days: number) {
@@ -66,13 +77,13 @@ export function isDayInRange(
 
 export function getNameOfDay(date: Date | string) {
   const days = [
-    'sunday',
-    'monday',
-    'tuesday',
-    'wednesday',
-    'thursday',
-    'friday',
-    'saturday',
+    "sunday",
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
   ];
   const d = new Date(date);
   return days[d.getDay()];
@@ -82,7 +93,12 @@ export function removeTime(date = new Date()) {
   return new Date(date.toDateString());
 }
 
-export function differenceInBusinnessHours(start: Date, end: Date, avgWorkdayStartHour: number, avgWorkdayEndHour: number) {
+export function differenceInBusinnessHours(
+  start: Date,
+  end: Date,
+  avgWorkdayStartHour: number,
+  avgWorkdayEndHour: number
+) {
   if (isSameDay(start, end)) {
     return end >= start ? differenceInHours(end, start) : 0;
   } else {
@@ -97,11 +113,27 @@ export function differenceInBusinnessHours(start: Date, end: Date, avgWorkdaySta
 }
 
 export function truncateMessage(message: string, maxLength: number) {
-  if (!message) return '';
+  if (!message) return "";
   if (message.length <= maxLength) return message;
-  return message.slice(0, maxLength - 3) + '...';
+  return message.slice(0, maxLength - 3) + "...";
 }
 
-export const getEnumKeys = <T extends object>(enumToDeconstruct: T): Array<keyof typeof enumToDeconstruct> => {
-  return Object.keys(enumToDeconstruct) as Array<keyof typeof enumToDeconstruct>;
+export const getEnumKeys = <T extends object>(
+  enumToDeconstruct: T
+): Array<keyof typeof enumToDeconstruct> => {
+  return Object.keys(enumToDeconstruct) as Array<
+    keyof typeof enumToDeconstruct
+  >;
 };
+
+export function getDatesIntervalString(start: Date, end: Date): string {
+  if (isSameDay(start, end)) {
+    return format(start, "dd MMM yyyy");
+  } else if (isSameMonth(start, end)) {
+    return format(start, "dd") + "-" + format(end, "dd MMM yyyy");
+  } else if (isSameYear(start, end)) {
+    return format(start, "dd MMM") + "-" + format(end, "dd MMM yyyy");
+  } else {
+    return format(start, "dd MMM yyyy") + "-" + format(end, "dd MMM yyyy");
+  }
+}

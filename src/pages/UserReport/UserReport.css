@@ -1,5 +1,6 @@
 .user-report {
   min-height: 100vh;
+  overflow: visible;
 }
 
 .user-report-filter > div {

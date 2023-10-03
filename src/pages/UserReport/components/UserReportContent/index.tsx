@@ -6,6 +6,7 @@ import { Card } from "azure-devops-ui/Card";
 import { Pill, PillSize, PillVariant } from "azure-devops-ui/Pill";
 
 import "./UserReportContent.css";
+import { getDatesIntervalString } from "../../../../utils";
 
 type UserReportContentProps = {
   teamMembers?: TeamMemberWithInterval[];
@@ -21,8 +22,15 @@ export function UserReportContent({
   teamMembers = [],
   projectColors,
 }: UserReportContentProps) {
+  const widthContainer =
+    teamMembers.length > 0
+      ? (teamMembers[0].intervals.length + 1) * 140 + 40
+      : "auto";
   return (
-    <div className="user-report-content_container">
+    <div
+      className="user-report-content_container"
+      style={{ width: widthContainer }}
+    >
       {teamMembers.length > 0 ? (
         <div className="user-report-content_header">
           <div className="user-report-content_col"></div>
@@ -31,8 +39,7 @@ export function UserReportContent({
               className="user-report-content_col"
               key={format(interval.startDate, "ddMMyyyy")}
             >
-              {format(interval.startDate, "dd.MM.yyyy")} -{" "}
-              {format(interval.endDate, "dd.MM.yyyy")}
+              {getDatesIntervalString(interval.startDate, interval.endDate)}
             </div>
           ))}
         </div>

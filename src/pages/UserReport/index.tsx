@@ -1,53 +1,52 @@
-import React from "react";
+import React from "react"
 
-import Header from "../../components/Header";
-import { Page } from "azure-devops-ui/Page";
+import { Page } from "azure-devops-ui/Page"
 
-import { useProjects } from "../../hooks/useProjects";
-import { getIterations } from "../../domains";
-import { errorNotification } from "../../api/notificationObserver";
+import { errorNotification } from "../../api/notificationObserver"
+import Header from "../../components/Header"
+import { getIterations } from "../../domains"
+import { useProjects } from "../../hooks/useProjects"
+import "./UserReport.css"
+import { Loader } from "./components/Loader"
+import { UserReportContainer } from "./components/UserReportContainer"
+import { IterationAcrossProjects } from "./components/UserReportContainer/hooks/useUserReport"
+import { UserReportContent } from "./components/UserReportContent"
+import { colors } from "./utils/colors"
 
-import "./UserReport.css";
-import { Loader } from "./components/Loader";
-import { UserReportContainer } from "./components/UserReportContainer";
-import { UserReportContent } from "./components/UserReportContent";
-import { IterationAcrossProjects } from "./components/UserReportContainer/hooks/useUserReport";
-import { colors } from "./utils/colors";
-
-export const USER_REPORT_TITLE = "Отчет по сотруднику";
+export const USER_REPORT_TITLE = "Отчет по сотруднику"
 
 export default function UserReport() {
-  const [loading, setLoading] = React.useState(true);
+  const [loading, setLoading] = React.useState(true)
 
   const [iterations, setIterations] = React.useState<IterationAcrossProjects[]>(
     []
-  );
+  )
 
-  const { projects } = useProjects();
+  const { projects } = useProjects()
 
   const projectColors = React.useMemo(
     () =>
       projects.reduce<{
-        [projectId: string]: { red: number; green: number; blue: number };
+        [projectId: string]: { red: number; green: number; blue: number }
       }>((acc, cur, index) => {
         const [red, green, blue] =
-          colors[index < colors.length ? index : colors.length - 1];
-        acc[cur.id] = { red, green, blue };
-        return acc;
+          colors[index < colors.length ? index : colors.length - 1]
+        acc[cur.id] = { red, green, blue }
+        return acc
       }, {}),
     [projects]
-  );
+  )
 
   React.useEffect(() => {
-    if (!projects.length) return undefined;
+    if (!projects.length) return undefined
 
     Promise.all(
-      projects.map((project) => getIterations({ projectId: project.id }))
+      projects.map(project => getIterations({ projectId: project.id }))
     )
-      .then((res) => {
+      .then(res => {
         const resultIterations = res.flatMap<IterationAcrossProjects>(
           (baseIterations, indexProject) =>
-            baseIterations.map((baseIteration) => ({
+            baseIterations.map(baseIteration => ({
               ...baseIteration,
               attributes: {
                 startDate: new Date(baseIteration.attributes.startDate),
@@ -59,12 +58,12 @@ export default function UserReport() {
                 name: projects[indexProject].name,
               },
             }))
-        );
-        setIterations(resultIterations);
+        )
+        setIterations(resultIterations)
       })
       .catch(errorNotification)
-      .finally(() => setLoading(false));
-  }, [projects]);
+      .finally(() => setLoading(false))
+  }, [projects])
 
   return (
     <Page className="user-report">
@@ -76,5 +75,5 @@ export default function UserReport() {
         </UserReportContainer>
       ) : null}
     </Page>
-  );
+  )
 }

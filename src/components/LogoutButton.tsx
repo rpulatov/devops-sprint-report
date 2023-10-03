@@ -1,16 +1,18 @@
-import React from "react";
-import { Button } from "azure-devops-ui/Button";
-import { isAuth, requestAuth, saveAuth, updateAuthToken } from "../api";
+import React from "react"
+
+import { Button } from "azure-devops-ui/Button"
+
+import { isAuth, requestAuth, saveAuth, updateAuthToken } from "../api"
 
 export function LogoutButton() {
-  const [isAuthState, setIsAuthState] = React.useState(isAuth());
+  const [isAuthState, setIsAuthState] = React.useState(isAuth())
   return isAuthState ? (
     <Button
       iconProps={{ iconName: "Delete" }}
       onClick={() => {
-        saveAuth("");
-        updateAuthToken("");
-        setIsAuthState(isAuth());
+        saveAuth("")
+        updateAuthToken("")
+        setIsAuthState(isAuth())
       }}
     >
       Забыть Personal Access Token Azure DevOps
@@ -19,15 +21,15 @@ export function LogoutButton() {
     <Button
       iconProps={{ iconName: "Signin" }}
       onClick={() => {
-        const PAT = requestAuth();
+        const PAT = requestAuth()
         if (PAT) {
-          saveAuth(PAT);
-          updateAuthToken(PAT);
-          setIsAuthState(isAuth());
+          saveAuth(PAT)
+          updateAuthToken(PAT)
+          setIsAuthState(isAuth())
         }
       }}
     >
       Ввести Personal Access Token Azure DevOps
     </Button>
-  );
+  )
 }

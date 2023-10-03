@@ -1,38 +1,39 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react"
+
 import {
+  WorkItemState,
   getDataFromWorkItem,
   getWorkItemsByIds,
-  WorkItemState,
-} from "../../../domains/workItems";
+} from "../../../domains/workItems"
 
 export type GetUserStoryReportParams = {
-  workItems: WorkItemState[];
-  completedStates: Map<string, string[]>;
-};
+  workItems: WorkItemState[]
+  completedStates: Map<string, string[]>
+}
 
 export type UserStoryReportItem = {
-  id: number;
-  name: string;
-  parentWorkItemId: number | null;
-  parentName: string;
-  state: string;
-  isClosed: boolean;
-  assignedToName: string;
+  id: number
+  name: string
+  parentWorkItemId: number | null
+  parentName: string
+  state: string
+  isClosed: boolean
+  assignedToName: string
   /** Плановая загрузка, часы */
-  planEstimate: number;
+  planEstimate: number
   /** Фактическая выработка, часы */
-  planComplete: number;
+  planComplete: number
   /** Оставшаяся работа из плановых, часы */
-  planRemaining: 0;
+  planRemaining: 0
   /** Добавленная загрузка, часы */
-  overplanEstimate: number;
-  overplanComplete: number;
+  overplanEstimate: number
+  overplanComplete: number
   /** Оставшаяся работа из внеплановых, часы */
-  overplanRemaining: 0;
-  order: number;
-};
+  overplanRemaining: 0
+  order: number
+}
 
-const USER_STORE_EMPTY_KEY = -1;
+const USER_STORE_EMPTY_KEY = -1
 
 function createUserStoryReportItem(id: number): UserStoryReportItem {
   return {
@@ -50,30 +51,30 @@ function createUserStoryReportItem(id: number): UserStoryReportItem {
     overplanComplete: 0,
     overplanRemaining: 0,
     order: 0,
-  };
+  }
 }
 
 function createOrUpdateUserStoryMap(
   map: Map<number, UserStoryReportItem>,
   workItem: WorkItemState
 ) {
-  const key = workItem.id;
-  const item = map.get(key) || createUserStoryReportItem(key);
-  map.set(key, item);
+  const key = workItem.id
+  const item = map.get(key) || createUserStoryReportItem(key)
+  map.set(key, item)
 
-  item.name = workItem.name;
-  item.parentWorkItemId = workItem.parentWorkItemId;
-  item.assignedToName = workItem.assignedTo?.displayName || "-";
-  item.state = workItem.state;
-  item.isClosed = workItem.isClosed;
-  item.order = workItem.order;
+  item.name = workItem.name
+  item.parentWorkItemId = workItem.parentWorkItemId
+  item.assignedToName = workItem.assignedTo?.displayName || "-"
+  item.state = workItem.state
+  item.isClosed = workItem.isClosed
+  item.order = workItem.order
 }
 
 async function getUserStoryReport({
   workItems,
   completedStates,
 }: GetUserStoryReportParams): Promise<UserStoryReportItem[]> {
-  const userStoryMap = new Map<number, UserStoryReportItem>();
+  const userStoryMap = new Map<number, UserStoryReportItem>()
 
   for (const workItem of workItems) {
     const {
@@ -83,78 +84,78 @@ async function getUserStoryReport({
       originalEstimate,
       completedWork,
       remainingWork,
-    } = workItem;
+    } = workItem
 
     if (!["Task", "Bug"].includes(workItemType)) {
-      createOrUpdateUserStoryMap(userStoryMap, workItem);
-      continue;
+      createOrUpdateUserStoryMap(userStoryMap, workItem)
+      continue
     }
-    const key = parentWorkItemId || USER_STORE_EMPTY_KEY;
+    const key = parentWorkItemId || USER_STORE_EMPTY_KEY
 
-    const item = userStoryMap.get(key) || createUserStoryReportItem(key);
-    userStoryMap.set(key, item);
+    const item = userStoryMap.get(key) || createUserStoryReportItem(key)
+    userStoryMap.set(key, item)
 
-    item.id = key;
+    item.id = key
     if (overplan) {
-      item.overplanEstimate += originalEstimate;
-      item.overplanRemaining += remainingWork;
-      item.overplanComplete += completedWork;
+      item.overplanEstimate += originalEstimate
+      item.overplanRemaining += remainingWork
+      item.overplanComplete += completedWork
     } else {
-      item.planEstimate += originalEstimate;
-      item.planRemaining += remainingWork;
-      item.planComplete += completedWork;
+      item.planEstimate += originalEstimate
+      item.planRemaining += remainingWork
+      item.planComplete += completedWork
     }
   }
 
   // add user story from another sprint
   const emptyUserStoryIds = [...userStoryMap.values()]
-    .filter((item) => !item.name && item.id !== USER_STORE_EMPTY_KEY)
-    .map(({ id }) => id);
-  const emptyUserStories = await getWorkItemsByIds(emptyUserStoryIds);
+    .filter(item => !item.name && item.id !== USER_STORE_EMPTY_KEY)
+    .map(({ id }) => id)
+  const emptyUserStories = await getWorkItemsByIds(emptyUserStoryIds)
 
-  emptyUserStories.forEach((item) => {
-    const workItem = getDataFromWorkItem(completedStates)(item);
-    workItem.name = `(Wrong Sprint) ${workItem.name}`;
-    createOrUpdateUserStoryMap(userStoryMap, workItem);
-  });
+  emptyUserStories.forEach(item => {
+    const workItem = getDataFromWorkItem(completedStates)(item)
+    workItem.name = `(Wrong Sprint) ${workItem.name}`
+    createOrUpdateUserStoryMap(userStoryMap, workItem)
+  })
 
   // sort
   const userStories = [...userStoryMap.values()].sort(
     (a, b) => a.order - b.order
-  );
+  )
 
   // add features
   const featureIds = userStories
     .map(({ parentWorkItemId }) => parentWorkItemId)
-    .filter((id): id is number => id !== null);
+    .filter((id): id is number => id !== null)
 
-  const features = await getWorkItemsByIds(featureIds);
+  const features = await getWorkItemsByIds(featureIds)
   const featureNamesMap = features.reduce((acc, feature) => {
-    acc.set(feature.id, feature.fields["System.Title"]);
-    return acc;
-  }, new Map<number, string>());
+    acc.set(feature.id, feature.fields["System.Title"])
+    return acc
+  }, new Map<number, string>())
 
-  return userStories.map((item) => ({
+  return userStories.map(item => ({
     ...item,
     parentName: item.parentWorkItemId
       ? featureNamesMap.get(item.parentWorkItemId) || ""
       : "",
-  }));
+  }))
 }
 
 export function useUserStoryReport({
   workItems,
   completedStates,
 }: {
-  workItems: WorkItemState[];
-  completedStates: Map<string, string[]>;
+  workItems: WorkItemState[]
+  completedStates: Map<string, string[]>
 }) {
-  const [userStories, setUserStories] = useState<UserStoryReportItem[]>([]);
+  const [userStories, setUserStories] = useState<UserStoryReportItem[]>([])
 
   useEffect(() => {
-    setUserStories([]);
-    getUserStoryReport({ workItems, completedStates }).then(setUserStories);
-  }, [workItems, completedStates]);
+    setUserStories([])
+    getUserStoryReport({ workItems, completedStates }).then(setUserStories)
+  }, [workItems, completedStates])
 
-  return { userStories };
+  return { userStories }
 }

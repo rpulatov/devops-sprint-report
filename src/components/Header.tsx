@@ -1,13 +1,14 @@
-import React from "react";
+import React from "react"
 
-import { useNavigate } from "react-router-dom";
-import { Header as HeaderAzure, TitleSize } from "azure-devops-ui/Header";
+import { useNavigate } from "react-router-dom"
 
-type HeaderPrors = { title?: string };
+import { Header as HeaderAzure, TitleSize } from "azure-devops-ui/Header"
+
+type HeaderPrors = { title?: string }
 export default function Header({
   title,
 }: React.PropsWithChildren<HeaderPrors>) {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
   return (
     <HeaderAzure
       title={title}
@@ -17,5 +18,5 @@ export default function Header({
         onClick: () => navigate("/"),
       }}
     />
-  );
+  )
 }

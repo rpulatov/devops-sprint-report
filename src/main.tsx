@@ -1,16 +1,15 @@
-import ReactDOM from "react-dom";
-import { Routes, Route, HashRouter } from "react-router-dom";
+import ReactDOM from "react-dom"
+import { HashRouter, Route, Routes } from "react-router-dom"
 
-import Home from "./pages/Home";
-import SprintReport from "./pages/SprintReport";
-import WorkTimeline from "./pages/WorkTimeline";
-import NoMatch from "./pages/NoMatch";
-import UserReport from "./pages/UserReport";
+import "azure-devops-ui/Core/override.css"
+import { SurfaceBackground, SurfaceContext } from "azure-devops-ui/Surface"
 
-import { SurfaceBackground, SurfaceContext } from "azure-devops-ui/Surface";
-
-import "azure-devops-ui/Core/override.css";
-import "./main.css";
+import "./main.css"
+import Home from "./pages/Home"
+import NoMatch from "./pages/NoMatch"
+import SprintReport from "./pages/SprintReport"
+import UserReport from "./pages/UserReport"
+import WorkTimeline from "./pages/WorkTimeline"
 
 ReactDOM.render(
   <SurfaceContext.Provider value={{ background: SurfaceBackground.neutral }}>
@@ -28,4 +27,4 @@ ReactDOM.render(
     </HashRouter>
   </SurfaceContext.Provider>,
   document.getElementById("root") as HTMLElement
-);
+)

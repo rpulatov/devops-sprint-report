@@ -31,6 +31,6 @@
 
 
 */
-export * from './projects';
-export * from './iterations';
-export * from './teams';
+export * from "./projects"
+export * from "./iterations"
+export * from "./teams"

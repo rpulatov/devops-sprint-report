@@ -1,29 +1,29 @@
-import React from 'react';
+import React from "react"
 
-import { Toast } from 'azure-devops-ui/Toast';
+import { Toast } from "azure-devops-ui/Toast"
 
-import { notificationObserver } from '../api/notificationObserver';
+import { notificationObserver } from "../api/notificationObserver"
 
 export function NotificationLayer() {
   const [notifications, setNotifications] = React.useState<
     {
-      id: number;
-      message: string;
-      timer: NodeJS.Timeout;
-      ref: React.RefObject<Toast>;
+      id: number
+      message: string
+      timer: NodeJS.Timeout
+      ref: React.RefObject<Toast>
     }[]
-  >([]);
+  >([])
 
   React.useEffect(() => {
-    let id = 0;
+    let id = 0
 
     const fn = (text: string) => {
-      let currentId = id + 1;
-      id = currentId;
+      let currentId = id + 1
+      id = currentId
 
-      const ref = React.createRef<Toast>();
+      const ref = React.createRef<Toast>()
 
-      setNotifications((prev) => [
+      setNotifications(prev => [
         ...prev,
         {
           id: currentId,
@@ -34,26 +34,26 @@ export function NotificationLayer() {
               ref.current
                 .fadeOut()
                 .promise.finally(() =>
-                  setNotifications((prev) =>
-                    prev.filter((item) => item.id !== currentId)
+                  setNotifications(prev =>
+                    prev.filter(item => item.id !== currentId)
                   )
-                );
+                )
             }
           }, 3000),
         },
-      ]);
-    };
-    notificationObserver.subscribe(fn);
+      ])
+    }
+    notificationObserver.subscribe(fn)
     return () => {
-      notificationObserver.unsubscribe(fn);
-    };
-  }, []);
+      notificationObserver.unsubscribe(fn)
+    }
+  }, [])
 
   return (
     <>
-      {notifications.map((item) => (
+      {notifications.map(item => (
         <Toast key={item.id} ref={item.ref} message={item.message} />
       ))}
     </>
-  );
+  )
 }

@@ -1,22 +1,23 @@
-import React from 'react';
-import { errorNotification } from '../api/notificationObserver';
+import React from "react"
+
+import { errorNotification } from "../api/notificationObserver"
 import {
-  getTeamMembers,
   GetTeamMembersParams,
   TeamMember,
-} from '../domains/teammembers';
+  getTeamMembers,
+} from "../domains/teammembers"
 
 export function useTeamMembers({
   iteration,
   projectId,
   teamId,
 }: GetTeamMembersParams) {
-  const [teamMembers, setTeamMembers] = React.useState<TeamMember[]>([]);
+  const [teamMembers, setTeamMembers] = React.useState<TeamMember[]>([])
   React.useEffect(() => {
-    setTeamMembers([]);
+    setTeamMembers([])
     getTeamMembers({ projectId, iteration, teamId })
       .then(setTeamMembers)
-      .catch(errorNotification);
-  }, [projectId, iteration, teamId]);
-  return { teamMembers };
+      .catch(errorNotification)
+  }, [projectId, iteration, teamId])
+  return { teamMembers }
 }

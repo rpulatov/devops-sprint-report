@@ -1,81 +1,82 @@
-import React, { useCallback, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useCallback, useState } from "react"
 
-import { SelectProject } from "./components/SelectProject";
+import { useNavigate } from "react-router-dom"
+
 import {
   TeamProjectReference,
   WebApiTeam,
-} from "azure-devops-extension-api/Core";
-import { SelectIteration } from "./components/SelectIteration";
-import { TeamSettingsIteration } from "azure-devops-extension-api/Work";
-import { SelectTeam } from "./components/SelectTeams";
-import { Container } from "./components/Container";
-import { NotificationLayer } from "../../components/NotificationLayer";
-import { TypeReport } from "../../types/report";
-import Header from "../../components/Header";
+} from "azure-devops-extension-api/Core"
+import { TeamSettingsIteration } from "azure-devops-extension-api/Work"
+import { Card } from "azure-devops-ui/Card"
+import { Page } from "azure-devops-ui/Page"
 
-import "./SprintReport.css";
-import { Page } from "azure-devops-ui/Page";
-import { Card } from "azure-devops-ui/Card";
+import Header from "../../components/Header"
+import { NotificationLayer } from "../../components/NotificationLayer"
+import { TypeReport } from "../../types/report"
+import "./SprintReport.css"
+import { Container } from "./components/Container"
+import { SelectIteration } from "./components/SelectIteration"
+import { SelectProject } from "./components/SelectProject"
+import { SelectTeam } from "./components/SelectTeams"
 
 function SprintReport() {
   const [currentProject, setCurrentProject] =
-    useState<TeamProjectReference | null>(null);
+    useState<TeamProjectReference | null>(null)
 
   const [currentIteration, setCurrentIteration] =
-    useState<TeamSettingsIteration | null>(null);
+    useState<TeamSettingsIteration | null>(null)
 
-  const [currentTeam, setCurrentTeam] = useState<WebApiTeam | null>(null);
+  const [currentTeam, setCurrentTeam] = useState<WebApiTeam | null>(null)
   const [typeReport, setTypeReport] = useState<TypeReport>(
     TypeReport.SprintPlan
-  );
+  )
 
   const onChangeReport = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) =>
       setTypeReport(e.target.value as TypeReport),
     []
-  );
+  )
 
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   const exportToExcel = useCallback(async () => {
-    const XLSX = await import("xlsx");
+    const XLSX = await import("xlsx")
 
-    const wb = XLSX.utils.book_new();
+    const wb = XLSX.utils.book_new()
 
     const ws1 = XLSX.utils.table_to_sheet(
       document.querySelector("#sprint-title")
-    );
+    )
 
     const ws11 = XLSX.utils.table_to_sheet(
       document.querySelector("#team-report")
-    );
+    )
 
     const dataTeamReport = XLSX.utils.sheet_to_json<{ [key: string]: string }>(
       ws11,
       { header: 1, blankrows: false }
-    );
+    )
 
-    const aoaTeamReport = dataTeamReport.map(Object.values);
+    const aoaTeamReport = dataTeamReport.map(Object.values)
 
-    XLSX.utils.sheet_add_aoa(ws1, aoaTeamReport, { origin: 5 });
+    XLSX.utils.sheet_add_aoa(ws1, aoaTeamReport, { origin: 5 })
 
-    XLSX.utils.book_append_sheet(wb, ws1, "Отчет по команде");
+    XLSX.utils.book_append_sheet(wb, ws1, "Отчет по команде")
 
     const ws2 = XLSX.utils.table_to_sheet(
       document.querySelector("#user-story-report")
-    );
-    XLSX.utils.book_append_sheet(wb, ws2, "User Story");
+    )
+    XLSX.utils.book_append_sheet(wb, ws2, "User Story")
 
     const ws3 = XLSX.utils.table_to_sheet(
       document.querySelector("#feature-report")
-    );
-    XLSX.utils.book_append_sheet(wb, ws3, "Feature");
+    )
+    XLSX.utils.book_append_sheet(wb, ws3, "Feature")
 
-    XLSX.writeFile(wb, "sprint.xlsx");
-  }, []);
+    XLSX.writeFile(wb, "sprint.xlsx")
+  }, [])
 
-  const colSpanTitleForTeamReport = 12;
+  const colSpanTitleForTeamReport = 12
 
   return (
     <Page className="report_container">
@@ -83,10 +84,10 @@ function SprintReport() {
       <div className="page-content page-content-top">
         <Card>
           <SelectProject
-            onSelect={(data) => {
-              setCurrentIteration(null);
-              setCurrentTeam(null);
-              setCurrentProject(data);
+            onSelect={data => {
+              setCurrentIteration(null)
+              setCurrentTeam(null)
+              setCurrentProject(data)
             }}
           />
           {currentProject ? (
@@ -162,7 +163,7 @@ function SprintReport() {
       </div>
       <NotificationLayer />
     </Page>
-  );
+  )
 }
 
-export default SprintReport;
+export default SprintReport

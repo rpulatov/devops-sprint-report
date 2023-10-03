@@ -1,23 +1,23 @@
-import React from "react";
-import { TeamMemberWithInterval } from "../UserReportContainer/hooks/useUserReport";
+import React from "react"
 
-import format from "date-fns/format";
-import { Card } from "azure-devops-ui/Card";
-import { Pill, PillSize, PillVariant } from "azure-devops-ui/Pill";
+import { Card } from "azure-devops-ui/Card"
+import { Pill, PillSize, PillVariant } from "azure-devops-ui/Pill"
+import format from "date-fns/format"
 
-import "./UserReportContent.css";
-import { getDatesIntervalString } from "../../../../utils";
+import { getDatesIntervalString } from "../../../../utils"
+import { TeamMemberWithInterval } from "../UserReportContainer/hooks/useUserReport"
+import "./UserReportContent.css"
 
 type UserReportContentProps = {
-  teamMembers?: TeamMemberWithInterval[];
+  teamMembers?: TeamMemberWithInterval[]
   projectColors: {
     [projectId: string]: {
-      red: number;
-      green: number;
-      blue: number;
-    };
-  };
-};
+      red: number
+      green: number
+      blue: number
+    }
+  }
+}
 export function UserReportContent({
   teamMembers = [],
   projectColors,
@@ -25,7 +25,7 @@ export function UserReportContent({
   const widthContainer =
     teamMembers.length > 0
       ? (teamMembers[0].intervals.length + 1) * 140 + 40
-      : "auto";
+      : "auto"
   return (
     <div
       className="user-report-content_container"
@@ -34,7 +34,7 @@ export function UserReportContent({
       {teamMembers.length > 0 ? (
         <div className="user-report-content_header">
           <div className="user-report-content_col"></div>
-          {teamMembers[0].intervals.map((interval) => (
+          {teamMembers[0].intervals.map(interval => (
             <div
               className="user-report-content_col"
               key={format(interval.startDate, "ddMMyyyy")}
@@ -44,7 +44,7 @@ export function UserReportContent({
           ))}
         </div>
       ) : null}
-      {teamMembers.map((teamMember) => (
+      {teamMembers.map(teamMember => (
         <Card
           className="user-report-content_row"
           key={teamMember.teamMember.id}
@@ -52,15 +52,15 @@ export function UserReportContent({
           <div className="user-report-content_col">
             {teamMember.teamMember.name}
           </div>
-          {teamMember.intervals.map((interval) => {
+          {teamMember.intervals.map(interval => {
             const summary = interval.projects.reduce(
               (acc, cur) => {
-                acc.capacity += cur.capacity;
-                acc.completedWork += cur.completedWork;
-                return acc;
+                acc.capacity += cur.capacity
+                acc.completedWork += cur.completedWork
+                return acc
               },
               { capacity: 0, completedWork: 0 }
-            );
+            )
             return (
               <div
                 className="user-report-content_col"
@@ -92,10 +92,10 @@ export function UserReportContent({
                   {summary.completedWork.toFixed(1)}
                 </Pill>
               </div>
-            );
+            )
           })}
         </Card>
       ))}
     </div>
-  );
+  )
 }

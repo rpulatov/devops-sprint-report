@@ -1,8 +1,8 @@
-import React from 'react';
+import React from "react"
 
-import './TableRow.css';
+import "./TableRow.css"
 
-export type TableRowProps = {};
+export type TableRowProps = {}
 export function TableRow({ children }: React.PropsWithChildren<TableRowProps>) {
-  return <tr className="table-row">{children}</tr>;
+  return <tr className="table-row">{children}</tr>
 }

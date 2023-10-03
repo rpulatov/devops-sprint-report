@@ -1,10 +1,10 @@
-import React from 'react';
+import React from "react"
 
-import './TableHeader.css';
+import "./TableHeader.css"
 
-export type TableHeaderProps = {};
+export type TableHeaderProps = {}
 export function TableHeader({
   children,
 }: React.PropsWithChildren<TableHeaderProps>) {
-  return <thead className="table-header">{children}</thead>;
+  return <thead className="table-header">{children}</thead>
 }

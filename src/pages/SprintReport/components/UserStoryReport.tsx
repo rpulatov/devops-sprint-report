@@ -4,13 +4,16 @@ import { Table } from "../../../components/tables/Table"
 import { TableColumn } from "../../../components/tables/TableColumn"
 import { TypeReport } from "../../../types/report"
 import { UserStoryReportItem } from "../hooks/useUserStoryReport"
+import { Comments } from "./Comments"
 
 type UserStoryReportProps = {
+  projectId: string
   userStories: UserStoryReportItem[]
   typeReport: TypeReport
   htmlIdElement: string
 }
 export function UserStoryReport({
+  projectId,
   userStories,
   typeReport,
   htmlIdElement,
@@ -114,6 +117,14 @@ export function UserStoryReport({
             renderFooter={() => total.overplanRemaining.toFixed(1)}
           />
         ) : null}
+
+        <TableColumn
+          title="Коментарии"
+          className="column-centered"
+          render={(item: UserStoryReportItem) => (
+            <Comments projectId={projectId} workItemId={item.id} />
+          )}
+        />
       </Table>
       {typeReport === TypeReport.SprintResult && (
         <table>

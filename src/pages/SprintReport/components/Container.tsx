@@ -45,6 +45,7 @@ export function Container({
       <br />
       <br />
       <UserStoryReport
+        projectId={projectId}
         userStories={userStories}
         typeReport={typeReport}
         htmlIdElement="user-story-report"

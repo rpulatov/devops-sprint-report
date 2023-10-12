@@ -36,13 +36,20 @@ export function fetchAzure(
     projectId?: string
     teamId?: string
     parameters?: { [key: string | number]: string }
+    apiVersion?: string
     method?: "GET" | "POST"
     body?: BodyInit
   }
 ) {
-  const { projectId, teamId, method = "GET", body } = options ?? {}
+  const {
+    projectId,
+    teamId,
+    method = "GET",
+    body,
+    apiVersion = "7.0",
+  } = options ?? {}
 
-  const params = new URLSearchParams([["api-version", "7.0"]])
+  const params = new URLSearchParams([["api-version", apiVersion]])
   if (options?.parameters) {
     for (const param in options?.parameters) {
       params.append(param, options?.parameters[param])

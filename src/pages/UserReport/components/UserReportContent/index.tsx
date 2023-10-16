@@ -8,6 +8,8 @@ import { getDatesIntervalString } from "../../../../utils"
 import { TeamMemberWithInterval } from "../UserReportContainer/hooks/useUserReport"
 import "./UserReportContent.css"
 
+const MAX_LENGTH_NAME = 15
+
 type UserReportContentProps = {
   teamMembers?: TeamMemberWithInterval[]
   projectColors: {
@@ -76,8 +78,14 @@ export function UserReportContent({
                         className="user-report-content_project"
                         key={project.id}
                       >
-                        {project.name} -{" "}
-                        {capacity > 0 ? capacity.toFixed(1) : 0} |{" "}
+                        {project.name.length > MAX_LENGTH_NAME ? (
+                          <span title={project.name}>
+                            {`${project.name.substring(0, MAX_LENGTH_NAME)}.. `}
+                          </span>
+                        ) : (
+                          `${project.name} `
+                        )}
+                        - {capacity > 0 ? capacity.toFixed(1) : 0} |{" "}
                         {completedWork > 0 ? completedWork.toFixed(1) : 0}
                       </Pill>
                     )

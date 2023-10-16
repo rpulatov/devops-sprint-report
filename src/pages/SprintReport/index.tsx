@@ -1,11 +1,6 @@
 import React, { useCallback, useState } from "react"
 
-import { useNavigate } from "react-router-dom"
-
-import {
-  TeamProjectReference,
-  WebApiTeam,
-} from "azure-devops-extension-api/Core"
+import { TeamProjectReference } from "azure-devops-extension-api/Core"
 import { TeamSettingsIteration } from "azure-devops-extension-api/Work"
 import { Card } from "azure-devops-ui/Card"
 import { Page } from "azure-devops-ui/Page"
@@ -17,7 +12,6 @@ import "./SprintReport.css"
 import { Container } from "./components/Container"
 import { SelectIteration } from "./components/SelectIteration"
 import { SelectProject } from "./components/SelectProject"
-import { SelectTeam } from "./components/SelectTeams"
 
 function SprintReport() {
   const [currentProject, setCurrentProject] =
@@ -26,7 +20,6 @@ function SprintReport() {
   const [currentIteration, setCurrentIteration] =
     useState<TeamSettingsIteration | null>(null)
 
-  const [currentTeam, setCurrentTeam] = useState<WebApiTeam | null>(null)
   const [typeReport, setTypeReport] = useState<TypeReport>(
     TypeReport.SprintPlan
   )
@@ -36,8 +29,6 @@ function SprintReport() {
       setTypeReport(e.target.value as TypeReport),
     []
   )
-
-  const navigate = useNavigate()
 
   const exportToExcel = useCallback(async () => {
     const XLSX = await import("xlsx")
@@ -86,7 +77,6 @@ function SprintReport() {
           <SelectProject
             onSelect={data => {
               setCurrentIteration(null)
-              setCurrentTeam(null)
               setCurrentProject(data)
             }}
           />
@@ -95,10 +85,6 @@ function SprintReport() {
               <SelectIteration
                 projectId={currentProject.id}
                 onSelect={setCurrentIteration}
-              />
-              <SelectTeam
-                projectId={currentProject.id}
-                onSelect={setCurrentTeam}
               />
               <select onChange={onChangeReport}>
                 <option value={TypeReport.SprintPlan}>План спринта</option>
@@ -147,14 +133,13 @@ function SprintReport() {
           </thead>
         </table>
 
-        {currentProject && currentTeam && currentIteration ? (
+        {currentProject && currentIteration ? (
           <>
             <p>
               <button onClick={exportToExcel}>Export to Excel</button>
             </p>
             <Container
               projectId={currentProject.id}
-              teamId={currentTeam.id}
               iteration={currentIteration}
               typeReport={typeReport}
             />

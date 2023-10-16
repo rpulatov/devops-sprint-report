@@ -10,12 +10,12 @@ import {
 
 type UseWorkItems = {
   projectId: string
-  teamId: string
+  teams: { teamId: string }[]
   iterationPath: string
 }
 export function useWorkItems({
   projectId,
-  teamId,
+  teams,
   iterationPath,
 }: UseWorkItems) {
   const [workItems, setWorkItems] = React.useState<WorkItemState[]>([])
@@ -30,16 +30,21 @@ export function useWorkItems({
       const completedStates = await getCompletedStates({ projectId })
       setCompletedStates(completedStates)
 
-      const workItemsRaw = await getWorkItemsByIteration({
-        projectId,
-        teamId,
-        iterationPath,
-      })
+      const workItemsRaw = await Promise.all(
+        teams.map(({ teamId }) =>
+          getWorkItemsByIteration({
+            projectId,
+            iterationPath,
+            teamId,
+          })
+        )
+      ).then(res => res.flat())
+
       return workItemsRaw.map(getDataFromWorkItem(completedStates))
     }
 
     load().then(setWorkItems).catch(errorNotification)
-  }, [projectId, teamId, iterationPath])
+  }, [projectId, teams, iterationPath])
   return {
     workItems,
     completedStates,

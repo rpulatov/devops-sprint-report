@@ -78,44 +78,41 @@ function getDateId(date: Date) {
 export function useUserReport() {
   const generateWorkIntervals = React.useCallback(
     (intervalOfWork: IntervalOfWork, dateRange: DateInterval) => {
+      const startDate = startOfDay(dateRange.startDate)
+      const endDate = endOfDay(dateRange.endDate)
+
       if (intervalOfWork === IntervalOfWork.Month) {
         return eachMonthOfInterval({
-          start: dateRange.startDate,
-          end: dateRange.endDate,
+          start: startDate,
+          end: endDate,
         }).map(firstDayOfMonth => ({
-          startDate:
-            firstDayOfMonth < dateRange.startDate
-              ? dateRange.startDate
-              : firstDayOfMonth,
+          startDate: firstDayOfMonth < startDate ? startDate : firstDayOfMonth,
           endDate:
-            endOfMonth(firstDayOfMonth) > dateRange.endDate
-              ? dateRange.endDate
+            endOfMonth(firstDayOfMonth) > endDate
+              ? endDate
               : endOfMonth(firstDayOfMonth),
         }))
       }
       if (intervalOfWork === IntervalOfWork.Week) {
         return eachWeekOfInterval(
           {
-            start: dateRange.startDate,
-            end: dateRange.endDate,
+            start: startDate,
+            end: endDate,
           },
           { weekStartsOn: 1 }
         ).map(firstDayOfWeek => ({
-          startDate:
-            firstDayOfWeek < dateRange.startDate
-              ? dateRange.startDate
-              : firstDayOfWeek,
+          startDate: firstDayOfWeek < startDate ? startDate : firstDayOfWeek,
           endDate:
-            endOfWeek(firstDayOfWeek, { weekStartsOn: 1 }) > dateRange.endDate
-              ? dateRange.endDate
+            endOfWeek(firstDayOfWeek, { weekStartsOn: 1 }) > endDate
+              ? endDate
               : endOfWeek(firstDayOfWeek, { weekStartsOn: 1 }),
         }))
       }
 
       if (intervalOfWork === IntervalOfWork.Day) {
         return eachDayOfInterval({
-          start: dateRange.startDate,
-          end: dateRange.endDate,
+          start: startDate,
+          end: endDate,
         }).map(startOfDay => ({
           startDate: startOfDay,
           endDate: endOfDay(startOfDay),

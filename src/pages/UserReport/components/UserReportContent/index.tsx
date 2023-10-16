@@ -8,7 +8,7 @@ import { getDatesIntervalString } from "../../../../utils"
 import { TeamMemberWithInterval } from "../UserReportContainer/hooks/useUserReport"
 import "./UserReportContent.css"
 
-const MAX_LENGTH_NAME = 15
+const MAX_LENGTH_NAME = 11
 
 type UserReportContentProps = {
   teamMembers?: TeamMemberWithInterval[]
@@ -78,9 +78,11 @@ export function UserReportContent({
                         className="user-report-content_project"
                         key={project.id}
                       >
-                        {project.name.length > MAX_LENGTH_NAME ? (
+                        {project.name.length > MAX_LENGTH_NAME + 1 ? (
                           <span title={project.name}>
-                            {`${project.name.substring(0, MAX_LENGTH_NAME)}.. `}
+                            {`${project.name
+                              .substring(0, MAX_LENGTH_NAME)
+                              .trim()}.. `}
                           </span>
                         ) : (
                           `${project.name} `

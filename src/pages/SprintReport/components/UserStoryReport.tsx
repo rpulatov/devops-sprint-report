@@ -47,7 +47,11 @@ export function UserStoryReport({
 
   return (
     <>
-      <Table data={userStories} htmlIdElement={htmlIdElement}>
+      <Table
+        data={userStories}
+        htmlIdElement={htmlIdElement}
+        containerClassName="table-bordered"
+      >
         <TableColumn
           name="name"
           title="Цель спринта (User Story)"
@@ -120,7 +124,6 @@ export function UserStoryReport({
 
         <TableColumn
           title="Коментарии"
-          className="column-centered"
           render={(item: UserStoryReportItem) => (
             <Comments projectId={projectId} workItemId={item.id} />
           )}

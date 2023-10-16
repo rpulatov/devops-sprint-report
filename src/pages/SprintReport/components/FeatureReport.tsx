@@ -86,7 +86,11 @@ export function FeatureReport({
   }, [userStories])
 
   return (
-    <Table data={data} htmlIdElement={htmlIdElement}>
+    <Table
+      data={data}
+      htmlIdElement={htmlIdElement}
+      containerClassName="table-bordered"
+    >
       <TableColumn
         name="name"
         title="Функционал (Feature)"

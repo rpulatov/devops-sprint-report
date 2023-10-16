@@ -62,7 +62,11 @@ export function TeamReport({
   const { teamReport, total } = useTeamReport({ workItems, teamMembers })
 
   return (
-    <Table data={teamReport} htmlIdElement={htmlIdElement}>
+    <Table
+      data={teamReport}
+      htmlIdElement={htmlIdElement}
+      containerClassName="table-bordered"
+    >
       <TableColumn
         name="name"
         title="ФИО"

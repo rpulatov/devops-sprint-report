@@ -1,2 +1,14 @@
 .table-container {
 }
+
+table.table-bordered,
+table.table-bordered th,
+table.table-bordered td {
+  border: 1px solid #00000070;
+  border-collapse: collapse;
+}
+
+table.table-bordered th,
+table.table-bordered td {
+  padding: 1px 2px;
+}

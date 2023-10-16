@@ -15,23 +15,24 @@ type CommentsProps = {
   workItemId: number
 }
 export function Comments({ projectId, workItemId }: CommentsProps) {
-  const [text, setText] = React.useState<string | null>(null)
+  const [text, setText] = React.useState<string[] | null>(null)
   React.useEffect(() => {
     getComments(projectId, workItemId)
       .then(({ comments }) => {
         setText(
-          comments
-            .map(comment => formatter(comment.text))
-            .filter(filterComment)
-            .join("")
+          comments.map(comment => formatter(comment.text)).filter(filterComment)
         )
       })
-      .catch(() => setText("-"))
+      .catch(() => setText(["-"]))
   }, [projectId, workItemId])
 
-  return text === null ? (
-    <div>Загрузка...</div>
-  ) : (
-    <div dangerouslySetInnerHTML={{ __html: text }} />
+  return (
+    <>
+      {text === null ? (
+        <div>Загрузка...</div>
+      ) : (
+        text.map(comment => <div key={comment}>{comment}</div>)
+      )}
+    </>
   )
 }

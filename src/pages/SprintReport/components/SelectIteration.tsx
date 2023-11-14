@@ -1,8 +1,11 @@
 import React from "react"
 
 import { TeamSettingsIteration } from "azure-devops-extension-api/Work"
+import endOfDay from "date-fns/endOfDay"
 
 import { useIterations } from "../../../hooks/useIterations"
+import startOfDay from "date-fns/startOfDay"
+import format from "date-fns/format"
 
 type SelectIterationProps = {
   projectId: string
@@ -22,31 +25,16 @@ export function SelectIteration({ projectId, onSelect }: SelectIterationProps) {
   )
 
   const iterationsSorted = React.useMemo(() => {
-    const locate = "ru-RU"
-    const options1: Intl.DateTimeFormatOptions = {
-      month: "2-digit",
-      day: "numeric",
-    }
-
-    const options2: Intl.DateTimeFormatOptions = {
-      month: "2-digit",
-      day: "numeric",
-      year: "numeric",
-    }
-
     const now = Date.now()
 
     const items = iterations.map(item => {
-      const startDateObj = new Date(item.attributes.startDate)
-      startDateObj.setUTCHours(0, 0, 0, 0)
-
-      const finishDateObj = new Date(item.attributes.finishDate)
-      finishDateObj.setUTCHours(23, 59, 59, 999)
+      const startDateObj = startOfDay(new Date(item.attributes.startDate))
+      const finishDateObj = endOfDay(new Date(item.attributes.finishDate))
 
       return {
         ...item,
-        startDate: startDateObj.toLocaleDateString(locate, options1),
-        finishDate: finishDateObj.toLocaleDateString(locate, options2),
+        startDate: format(startDateObj, "dd.MM"),
+        finishDate: format(finishDateObj, "dd.MM.yyyy"),
         currentSprint:
           Number(now) <= Number(finishDateObj) &&
           Number(now) >= Number(startDateObj),

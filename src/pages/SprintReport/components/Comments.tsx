@@ -1,9 +1,13 @@
 import React from "react"
 
 import { getComments } from "../../../domains/comments"
+import "./Comments.css"
 
 function formatter(text: string) {
-  return text.replaceAll(/<[^>]*>/g, "").trim()
+  return text
+    .replaceAll(/<[^>]*>/g, "")
+    .replaceAll("&nbsp;", " ")
+    .trim()
 }
 
 function filterComment(text: string) {
@@ -31,7 +35,11 @@ export function Comments({ projectId, workItemId }: CommentsProps) {
       {text === null ? (
         <div>Загрузка...</div>
       ) : (
-        text.map(comment => <div key={comment}>{comment}</div>)
+        text.map(comment => (
+          <div key={comment} className="comment">
+            {comment}
+          </div>
+        ))
       )}
     </>
   )

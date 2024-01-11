@@ -9,11 +9,13 @@ import {
 } from "../domains/workItems"
 
 type UseWorkItems = {
+  organization: string
   projectId: string
   teams: { teamId: string }[]
   iterationPath: string
 }
 export function useWorkItems({
+  organization,
   projectId,
   teams,
   iterationPath,
@@ -27,12 +29,16 @@ export function useWorkItems({
     setWorkItems([])
 
     const load = async () => {
-      const completedStates = await getCompletedStates({ projectId })
+      const completedStates = await getCompletedStates({
+        organization,
+        projectId,
+      })
       setCompletedStates(completedStates)
 
       const workItemsRaw = await Promise.all(
         teams.map(({ teamId }) =>
           getWorkItemsByIteration({
+            organization,
             projectId,
             iterationPath,
             teamId,
@@ -44,7 +50,7 @@ export function useWorkItems({
     }
 
     load().then(setWorkItems).catch(errorNotification)
-  }, [projectId, teams, iterationPath])
+  }, [organization, projectId, teams, iterationPath])
   return {
     workItems,
     completedStates,

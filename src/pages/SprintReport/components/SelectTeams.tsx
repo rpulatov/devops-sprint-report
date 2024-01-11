@@ -5,11 +5,16 @@ import { WebApiTeam } from "azure-devops-extension-api/Core"
 import { useTeams } from "../../../hooks/useTeams"
 
 type SelectTeamProps = {
+  organization: string
   projectId: string
   onSelect: (team: WebApiTeam) => void
 }
-export function SelectTeam({ projectId, onSelect }: SelectTeamProps) {
-  const { teams } = useTeams({ projectId })
+export function SelectTeam({
+  organization,
+  projectId,
+  onSelect,
+}: SelectTeamProps) {
+  const { teams } = useTeams({ organization, projectId })
 
   const onChange = React.useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {

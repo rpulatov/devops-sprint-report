@@ -5,7 +5,6 @@ import { Page } from "azure-devops-ui/Page"
 import { errorNotification } from "../../api/notificationObserver"
 import Header from "../../components/Header"
 import { getIterations } from "../../domains"
-import { useOrganization } from "../../hooks/useOrganization"
 import { useProjects } from "../../hooks/useProjects"
 import "./UserReport.css"
 import { Loader } from "./components/Loader"
@@ -23,8 +22,7 @@ export default function UserReport() {
     []
   )
 
-  const { organization } = useOrganization()
-  const { projects } = useProjects(organization)
+  const { projects } = useProjects()
 
   const projectColors = React.useMemo(
     () =>
@@ -43,9 +41,7 @@ export default function UserReport() {
     if (!projects.length) return undefined
 
     Promise.all(
-      projects.map(project =>
-        getIterations({ organization, projectId: project.id })
-      )
+      projects.map(project => getIterations({ projectId: project.id }))
     )
       .then(res => {
         const resultIterations = res.flatMap<IterationAcrossProjects>(
@@ -67,18 +63,14 @@ export default function UserReport() {
       })
       .catch(errorNotification)
       .finally(() => setLoading(false))
-  }, [projects, organization])
+  }, [projects])
 
   return (
     <Page className="user-report">
       <Header title={USER_REPORT_TITLE} />
       {loading ? <Loader /> : null}
       {iterations.length > 0 ? (
-        <UserReportContainer
-          organization={organization}
-          iterations={iterations}
-          projects={projects}
-        >
+        <UserReportContainer iterations={iterations} projects={projects}>
           <UserReportContent projectColors={projectColors} />
         </UserReportContainer>
       ) : null}

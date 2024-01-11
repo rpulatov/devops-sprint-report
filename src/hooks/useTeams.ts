@@ -5,11 +5,11 @@ import { WebApiTeam } from "azure-devops-extension-api/Core"
 import { errorNotification } from "../api/notificationObserver"
 import { GetTeamsParams, getTeams } from "../domains/teams"
 
-export function useTeams({ organization, projectId }: GetTeamsParams) {
+export function useTeams({ projectId }: GetTeamsParams) {
   const [teams, setTeams] = React.useState<WebApiTeam[]>([])
   React.useEffect(() => {
     setTeams([])
-    getTeams({ organization, projectId })
+    getTeams({ projectId })
       .then(res => setTeams(res))
       .catch(errorNotification)
   }, [projectId])

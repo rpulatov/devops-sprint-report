@@ -17,26 +17,19 @@ export type TeamMember = {
 }
 
 export type GetTeamMembersParams = {
-  organization: string
   iteration: TeamSettingsIteration
   projectId: string
   teamId: string
 }
 export async function getTeamMembers({
-  organization,
   iteration,
   projectId,
   teamId,
 }: GetTeamMembersParams): Promise<TeamMember[]> {
   const data = await Promise.all([
-    getCapacity({ organization, projectId, teamId, iterationId: iteration.id }),
-    getTeamDaysOff({
-      organization,
-      projectId,
-      teamId,
-      iterationId: iteration.id,
-    }),
-    getTeamSettings({ organization, projectId }),
+    getCapacity({ projectId, teamId, iterationId: iteration.id }),
+    getTeamDaysOff({ projectId, teamId, iterationId: iteration.id }),
+    getTeamSettings({ projectId }),
   ])
 
   const [capacity, teamDaysOff, teamWorkingDays] = data

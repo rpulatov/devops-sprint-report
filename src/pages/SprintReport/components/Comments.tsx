@@ -1,7 +1,6 @@
 import React from "react"
 
 import { getComments } from "../../../domains/comments"
-import { useOrganization } from "../../../hooks/useOrganization"
 import "./Comments.css"
 
 function formatter(text: string) {
@@ -20,11 +19,9 @@ type CommentsProps = {
   workItemId: number
 }
 export function Comments({ projectId, workItemId }: CommentsProps) {
-  const { organization } = useOrganization()
-
   const [text, setText] = React.useState<string[] | null>(null)
   React.useEffect(() => {
-    getComments(organization, projectId, workItemId)
+    getComments(projectId, workItemId)
       .then(({ comments }) => {
         setText(
           comments.map(comment => formatter(comment.text)).filter(filterComment)

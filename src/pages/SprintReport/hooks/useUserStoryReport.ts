@@ -7,7 +7,6 @@ import {
 } from "../../../domains/workItems"
 
 export type GetUserStoryReportParams = {
-  organization: string
   workItems: WorkItemState[]
   completedStates: Map<string, string[]>
 }
@@ -72,7 +71,6 @@ function createOrUpdateUserStoryMap(
 }
 
 async function getUserStoryReport({
-  organization,
   workItems,
   completedStates,
 }: GetUserStoryReportParams): Promise<UserStoryReportItem[]> {
@@ -113,10 +111,7 @@ async function getUserStoryReport({
   const emptyUserStoryIds = [...userStoryMap.values()]
     .filter(item => !item.name && item.id !== USER_STORE_EMPTY_KEY)
     .map(({ id }) => id)
-  const emptyUserStories = await getWorkItemsByIds(
-    organization,
-    emptyUserStoryIds
-  )
+  const emptyUserStories = await getWorkItemsByIds(emptyUserStoryIds)
 
   emptyUserStories.forEach(item => {
     const workItem = getDataFromWorkItem(completedStates)(item)
@@ -134,7 +129,7 @@ async function getUserStoryReport({
     .map(({ parentWorkItemId }) => parentWorkItemId)
     .filter((id): id is number => id !== null)
 
-  const features = await getWorkItemsByIds(organization, featureIds)
+  const features = await getWorkItemsByIds(featureIds)
   const featureNamesMap = features.reduce((acc, feature) => {
     acc.set(feature.id, feature.fields["System.Title"])
     return acc
@@ -149,11 +144,9 @@ async function getUserStoryReport({
 }
 
 export function useUserStoryReport({
-  organization,
   workItems,
   completedStates,
 }: {
-  organization: string
   workItems: WorkItemState[]
   completedStates: Map<string, string[]>
 }) {
@@ -161,9 +154,7 @@ export function useUserStoryReport({
 
   useEffect(() => {
     setUserStories([])
-    getUserStoryReport({ organization, workItems, completedStates }).then(
-      setUserStories
-    )
+    getUserStoryReport({ workItems, completedStates }).then(setUserStories)
   }, [workItems, completedStates])
 
   return { userStories }

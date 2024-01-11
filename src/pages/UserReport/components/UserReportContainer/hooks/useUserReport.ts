@@ -75,7 +75,7 @@ function getDateId(date: Date) {
   return format(date, "ddMMyyyy")
 }
 
-export function useUserReport() {
+export function useUserReport(organization: string) {
   const generateWorkIntervals = React.useCallback(
     (intervalOfWork: IntervalOfWork, dateRange: DateInterval) => {
       const startDate = startOfDay(dateRange.startDate)
@@ -128,19 +128,26 @@ export function useUserReport() {
   const getUserReportByIteration = React.useCallback(
     async (iteration: IterationAcrossProjects) => {
       const { teams } = await getIterationCapacities({
+        organization,
         projectId: iteration.project.id,
         iterationId: iteration.id,
       })
 
       const teamMembers = await Promise.all(
         teams.map(({ teamId }) =>
-          getTeamMembers({ iteration, projectId: iteration.project.id, teamId })
+          getTeamMembers({
+            organization,
+            iteration,
+            projectId: iteration.project.id,
+            teamId,
+          })
         )
       ).then(res => res.flat())
 
       const workItems = await Promise.all(
         teams.map(({ teamId }) =>
           getWorkItemsByIteration({
+            organization,
             projectId: iteration.project.id,
             iterationPath: iteration.path,
             teamId,

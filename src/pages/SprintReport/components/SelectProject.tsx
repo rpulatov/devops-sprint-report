@@ -2,13 +2,15 @@ import React from "react"
 
 import { TeamProjectReference } from "azure-devops-extension-api/Core"
 
+import { useOrganization } from "../../../hooks/useOrganization"
 import { useProjects } from "../../../hooks/useProjects"
 
 type SelectProjectProps = {
   onSelect: (project: TeamProjectReference) => void
 }
 export function SelectProject({ onSelect }: SelectProjectProps) {
-  const { projects } = useProjects()
+  const { organization } = useOrganization()
+  const { projects } = useProjects(organization)
 
   const onChange = React.useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {

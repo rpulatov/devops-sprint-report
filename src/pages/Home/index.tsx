@@ -13,20 +13,20 @@ function Home() {
       <Button
         className="homepage_link"
         primary
-        onClick={() => navigate("/report")}
+        onClick={() => navigate("report")}
         text="Отчет план/факт по спринту"
       />
 
       <Button
         className="homepage_link"
         primary
-        onClick={() => navigate("/user-report")}
+        onClick={() => navigate("user-report")}
         text="Отчет по сотруднику"
       />
       <Button
         className="homepage_link"
         primary
-        onClick={() => navigate("/timeline")}
+        onClick={() => navigate("timeline")}
         text="Таймлайн по Work Item"
       />
       <hr />

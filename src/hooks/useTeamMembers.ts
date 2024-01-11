@@ -8,6 +8,7 @@ import {
 } from "../domains/teammembers"
 
 export function useTeamMembers({
+  organization,
   iteration,
   projectId,
   teamId,
@@ -15,7 +16,7 @@ export function useTeamMembers({
   const [teamMembers, setTeamMembers] = React.useState<TeamMember[]>([])
   React.useEffect(() => {
     setTeamMembers([])
-    getTeamMembers({ projectId, iteration, teamId })
+    getTeamMembers({ organization, projectId, iteration, teamId })
       .then(setTeamMembers)
       .catch(errorNotification)
   }, [projectId, iteration, teamId])

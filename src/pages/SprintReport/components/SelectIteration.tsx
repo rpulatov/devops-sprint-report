@@ -2,17 +2,19 @@ import React from "react"
 
 import { TeamSettingsIteration } from "azure-devops-extension-api/Work"
 import endOfDay from "date-fns/endOfDay"
+import format from "date-fns/format"
+import startOfDay from "date-fns/startOfDay"
 
 import { useIterations } from "../../../hooks/useIterations"
-import startOfDay from "date-fns/startOfDay"
-import format from "date-fns/format"
+import { useOrganization } from "../../../hooks/useOrganization"
 
 type SelectIterationProps = {
   projectId: string
   onSelect: (iteration: TeamSettingsIteration) => void
 }
 export function SelectIteration({ projectId, onSelect }: SelectIterationProps) {
-  const { iterations } = useIterations({ projectId })
+  const { organization } = useOrganization()
+  const { iterations } = useIterations({ organization, projectId })
 
   const onChange = React.useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {

@@ -6,7 +6,7 @@ if (PAT) saveAuth(PAT)
 
 let TOKEN = ""
 const API_URL = "https://dev.azure.com"
-const ORG_NAME = "solution-factory"
+export const DEFAULT_ORG_NAME = "solution-factory"
 
 updateAuthToken(PAT)
 
@@ -32,6 +32,7 @@ export function updateAuthToken(PAT: string) {
 
 export function fetchAzure(
   url: string,
+  organization: string,
   options?: {
     projectId?: string
     teamId?: string
@@ -57,7 +58,7 @@ export function fetchAzure(
   }
 
   return fetch(
-    `${API_URL}/${ORG_NAME}/${projectId ? projectId + "/" : ""}${
+    `${API_URL}/${organization}/${projectId ? projectId + "/" : ""}${
       teamId ? teamId + "/" : ""
     }_apis${url}?${params.toString()}`,
     {
@@ -107,6 +108,6 @@ export async function fetchAzureRawUrl(
   })
 }
 
-export function buildAzureWebUrl(url: string) {
-  return `${API_URL}/${ORG_NAME}/${url}`
+export function buildAzureWebUrl(organization: string, url: string) {
+  return `${API_URL}/${organization}/${url}`
 }

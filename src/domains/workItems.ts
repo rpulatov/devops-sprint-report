@@ -12,8 +12,14 @@ import {
 
 import { buildAzureWebUrl, fetchAzure, fetchAzureRawUrl } from "../api"
 
-export async function getCompletedStates({ projectId }: { projectId: string }) {
-  return fetchAzure(`/wit/workitemtypes`, {
+export async function getCompletedStates({
+  organization,
+  projectId,
+}: {
+  organization: string
+  projectId: string
+}) {
+  return fetchAzure(`/wit/workitemtypes`, organization, {
     projectId,
   })
     .then((res: { count: number; value: WorkItemType[] }) => res.value)
@@ -31,20 +37,25 @@ export async function getCompletedStates({ projectId }: { projectId: string }) {
 }
 
 type GetTeamFieldValues = {
+  organization: string
   projectId: string
   teamId: string
 }
 export async function getTeamFieldValues({
+  organization,
   projectId,
   teamId,
 }: GetTeamFieldValues) {
-  return fetchAzure(`/work/teamsettings/teamfieldvalues`, {
+  return fetchAzure(`/work/teamsettings/teamfieldvalues`, organization, {
     projectId,
     teamId,
   }).then((res: TeamFieldValues) => res)
 }
 
-export async function getWorkItemsByIds(workItemsIds: number[]) {
+export async function getWorkItemsByIds(
+  organization: string,
+  workItemsIds: number[]
+) {
   const chunkSize = 200
   const chunksIds: string[] = []
   for (let i = 0; i < workItemsIds.length; i += chunkSize) {
@@ -54,50 +65,68 @@ export async function getWorkItemsByIds(workItemsIds: number[]) {
 
   return Promise.all(
     chunksIds.map(ids =>
-      fetchAzure("/wit/workItems", {
+      fetchAzure("/wit/workItems", organization, {
         parameters: { ids, $expand: "relations" },
       })
     )
   ).then((res: { value: WorkItem[] }[]) => res.flatMap(item => item.value))
 }
 
-export async function getWorkItemUpdatesById(workItemsId: number) {
-  return fetchAzure(`/wit/workItems/${workItemsId}/updates`).then(
+export async function getWorkItemUpdatesById(
+  organization: string,
+  workItemsId: number
+) {
+  return fetchAzure(`/wit/workItems/${workItemsId}/updates`, organization).then(
     (res: { value: WorkItemUpdate[] }) => res.value
   )
 }
 
-export async function getChildWorkItemsByParentId(workItemsId: number) {
-  const workItem = await getWorkItemsByIds([workItemsId]).then(
+export async function getChildWorkItemsByParentId(
+  organization: string,
+  workItemsId: number
+) {
+  const workItem = await getWorkItemsByIds(organization, [workItemsId]).then(
     (res: WorkItem[]) => res[0]
   )
-  return getChildWorkItemsByWorkItem(workItem)
+  return getChildWorkItemsByWorkItem(organization, workItem)
 }
 
-export async function getChildWorkItemsByWorkItem(workItem: WorkItem) {
+export async function getChildWorkItemsByWorkItem(
+  organization: string,
+  workItem: WorkItem
+) {
   const children_relations = workItem.relations
     .filter(relation => relation.rel === "System.LinkTypes.Hierarchy-Forward")
     .filter(relation => relation.attributes["name"] === "Child")
   const children_ids = children_relations
     .map(relation => parseWorkItemIdFromUrl(relation.url))
     .filter(id => id !== null) as number[]
-  return getWorkItemsByIds(children_ids)
+  return getWorkItemsByIds(organization, children_ids)
 }
 
-export async function getRelatedPRsByWorkItemId(workItemsId: number) {
-  const workItem = await getWorkItemsByIds([workItemsId]).then(
+export async function getRelatedPRsByWorkItemId(
+  organization: string,
+  workItemsId: number
+) {
+  const workItem = await getWorkItemsByIds(organization, [workItemsId]).then(
     (res: WorkItem[]) => res[0]
   )
-  return getRelatedPRsByWorkItem(workItem)
+  return getRelatedPRsByWorkItem(organization, workItem)
 }
 
-export async function getRelatedPRsByWorkItem(workItem: WorkItem) {
+export async function getRelatedPRsByWorkItem(
+  organization: string,
+  workItem: WorkItem
+) {
   const pr_ids = workItem.relations
     .filter(relation => relation.rel === "ArtifactLink")
     .filter(relation => relation.attributes["name"] === "Pull Request")
     .map(relation => parsePRIdFromUrl(relation.url))
   return Promise.all(
-    pr_ids.map(async pr_id => await fetchAzure(`/git/pullrequests/${pr_id}`))
+    pr_ids.map(
+      async pr_id =>
+        await fetchAzure(`/git/pullrequests/${pr_id}`, organization)
+    )
   ).then(res => res.map(item => item as GitPullRequest))
 }
 
@@ -114,16 +143,18 @@ function parsePRIdFromUrl(url: string) {
 }
 
 type GetWorkItemsByWiql = {
+  organization: string
   projectId: string | undefined
   teamId: string | undefined
   query: string
 }
 export async function getWorkItemsByWiql({
+  organization,
   projectId,
   teamId,
   query,
 }: GetWorkItemsByWiql) {
-  return fetchAzure(`/wit/wiql`, {
+  return fetchAzure(`/wit/wiql`, organization, {
     projectId,
     teamId,
     method: "POST",
@@ -133,7 +164,7 @@ export async function getWorkItemsByWiql({
     .then(workItems => {
       if (workItems.length === 0) return []
       const workItemsIds = workItems.map(item => item.id)
-      return getWorkItemsByIds(workItemsIds)
+      return getWorkItemsByIds(organization, workItemsIds)
     })
 }
 
@@ -240,19 +271,26 @@ function createQueryWiql({ iterationPath, areaPath }: CreateQueryWiql) {
 export type WorkItemState = ReturnType<ReturnType<typeof getDataFromWorkItem>>
 
 export type GetWorkItemsByIterationParams = {
+  organization: string
   projectId: string
   teamId: string
   iterationPath: string
 }
 export async function getWorkItemsByIteration({
+  organization,
   projectId,
   teamId,
   iterationPath,
 }: GetWorkItemsByIterationParams) {
-  const teamFieldValues = await getTeamFieldValues({ projectId, teamId })
+  const teamFieldValues = await getTeamFieldValues({
+    organization,
+    projectId,
+    teamId,
+  })
   const areaPath = teamFieldValues.defaultValue
   const query = createQueryWiql({ iterationPath, areaPath })
   const workItemsRaw = await getWorkItemsByWiql({
+    organization,
     projectId,
     teamId,
     query,
@@ -261,6 +299,6 @@ export async function getWorkItemsByIteration({
   return workItemsRaw
 }
 
-export function getWorkItemWebUrl(workItemId: number) {
-  return buildAzureWebUrl(`_workitems/edit/${workItemId}`)
+export function getWorkItemWebUrl(organization: string, workItemId: number) {
+  return buildAzureWebUrl(organization, `_workitems/edit/${workItemId}`)
 }

@@ -23,14 +23,12 @@ import {
 } from "./hooks/useUserReport"
 
 export type UserReportContentProps = {
-  organization: string
   iterations: IterationAcrossProjects[]
   projects: TeamProjectReference[]
   children: React.ReactElement<{ teamMembers: TeamMemberWithInterval[] }>
 }
 
 export function UserReportContainer({
-  organization,
   iterations,
   projects,
   children,
@@ -51,7 +49,7 @@ export function UserReportContainer({
     generateWorkIntervals,
     getUserReportByIteration,
     joinTeamMembersWithIntervals,
-  } = useUserReport(organization)
+  } = useUserReport()
 
   const onSubmit = React.useCallback(async () => {
     if (!intervalOfWork) return

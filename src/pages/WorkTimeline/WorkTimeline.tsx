@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react"
 
 import Modal from "react-modal"
-import { useNavigate, useParams } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 
 import { WorkItem } from "azure-devops-extension-api/WorkItemTracking"
 import { Card } from "azure-devops-ui/Card"
+import { Page } from "azure-devops-ui/Page"
 import { addDays, isWeekend, min, parseISO } from "date-fns"
 import { Timeline } from "vis-timeline/esnext"
 import "vis-timeline/styles/vis-timeline-graph2d.min.css"
@@ -21,7 +22,6 @@ import {
   getWorkItemWebUrl,
   getWorkItemsByWiql,
 } from "../../domains/workItems"
-import { useOrganization } from "../../hooks/useOrganization"
 import {
   BugManagementMode,
   WorkTimelineItem,
@@ -40,8 +40,6 @@ import "./WorkTimeline.css"
 
 function WorkTimeline() {
   const navigate = useNavigate()
-
-  const { organization } = useOrganization()
 
   const [workItemId, setWorkItemId] = useState("")
   const [currentWorkItem, setWorkItem] = useState<WorkItem | null>(null)
@@ -123,7 +121,6 @@ function WorkTimeline() {
 
       setWorkItemLoading(true)
       const workItems = await getWorkItemsByWiql({
-        organization,
         projectId: undefined,
         teamId: undefined,
         query: `SELECT [System.Title], [System.WorkItemType] FROM WorkItems WHERE [System.Id] = ${workItemId}`,
@@ -161,29 +158,27 @@ function WorkTimeline() {
       let data: WorkTimelineItem[] = []
 
       const completedStates = await getCompletedStates({
-        organization,
         projectId: currentWorkItem.fields["System.TeamProject"],
       })
       setCompletedStates(completedStates)
 
       const load_work_item_state_events = async (workItemId: number) => {
         // get events with state changed
-        return await getWorkItemUpdatesById(organization, workItemId).then(
-          workItemUpdates =>
-            workItemUpdates
-              .filter(
-                workItemUpdate =>
-                  workItemUpdate.fields &&
-                  workItemUpdate.fields.hasOwnProperty("System.State")
-              )
-              .map(workItemUpdate => {
-                let res = new WorkTimelineItemEvent()
-                res.changedAt =
-                  workItemUpdate.fields["System.ChangedDate"].newValue
-                res.changedBy = workItemUpdate.revisedBy.displayName
-                res.event = workItemUpdate.fields["System.State"].newValue
-                return res
-              })
+        return await getWorkItemUpdatesById(workItemId).then(workItemUpdates =>
+          workItemUpdates
+            .filter(
+              workItemUpdate =>
+                workItemUpdate.fields &&
+                workItemUpdate.fields.hasOwnProperty("System.State")
+            )
+            .map(workItemUpdate => {
+              let res = new WorkTimelineItemEvent()
+              res.changedAt =
+                workItemUpdate.fields["System.ChangedDate"].newValue
+              res.changedBy = workItemUpdate.revisedBy.displayName
+              res.event = workItemUpdate.fields["System.State"].newValue
+              return res
+            })
         )
       }
 
@@ -205,15 +200,13 @@ function WorkTimeline() {
       ti.type = get_type_of_wti(currentWorkItem.fields["System.WorkItemType"])
       ti.title = currentWorkItem.fields["System.Title"]
       ti.assignedTo = currentWorkItem.fields["System.AssignedTo"]?.displayName
-      ti.url = getWorkItemWebUrl(organization, currentWorkItem.id)
+      ti.url = getWorkItemWebUrl(currentWorkItem.id)
       ti.events = await load_work_item_state_events(currentWorkItem.id)
       data.push(ti)
 
       // load data about children
-      const child_work_items = await getChildWorkItemsByWorkItem(
-        organization,
-        currentWorkItem
-      )
+      const child_work_items =
+        await getChildWorkItemsByWorkItem(currentWorkItem)
       const child_tis = await Promise.all(
         child_work_items.map(async child_work_item => {
           const ti = new WorkTimelineItem()
@@ -224,7 +217,7 @@ function WorkTimeline() {
           ti.title = child_work_item.fields["System.Title"]
           ti.assignedTo =
             child_work_item.fields["System.AssignedTo"]?.displayName
-          ti.url = getWorkItemWebUrl(organization, child_work_item.id)
+          ti.url = getWorkItemWebUrl(child_work_item.id)
           ti.events = await load_work_item_state_events(child_work_item.id)
           return ti
         })
@@ -234,10 +227,7 @@ function WorkTimeline() {
       // load data about PRs
       const wit = [currentWorkItem].concat(child_work_items)
       const prs = await Promise.all(
-        wit.map(
-          async work_item =>
-            await getRelatedPRsByWorkItem(organization, work_item)
-        )
+        wit.map(async work_item => await getRelatedPRsByWorkItem(work_item))
       ).then(prs =>
         prs
           .flat()

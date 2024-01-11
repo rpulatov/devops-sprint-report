@@ -1,16 +1,14 @@
 import React from "react"
 
-import { useParams } from "react-router-dom"
-
 import { TeamProjectReference } from "azure-devops-extension-api/Core"
 
 import { errorNotification } from "../api/notificationObserver"
 import { getProjects } from "../domains/projects"
 
-export function useProjects(organization: string) {
+export function useProjects() {
   const [projects, setProjects] = React.useState<TeamProjectReference[]>([])
   React.useEffect(() => {
-    getProjects(organization)
+    getProjects()
       .then(res => {
         res.sort((a, b) => {
           const nameA = a.name.toUpperCase()
@@ -22,7 +20,7 @@ export function useProjects(organization: string) {
         setProjects(res)
       })
       .catch(errorNotification)
-  }, [organization])
+  }, [])
   return {
     projects,
   }

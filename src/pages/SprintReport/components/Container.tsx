@@ -5,7 +5,6 @@ import { TeamSettingsIteration } from "azure-devops-extension-api/Work"
 import { errorNotification } from "../../../api/notificationObserver"
 import { getIterationCapacities } from "../../../domains"
 import { TeamMember, getTeamMembers } from "../../../domains/teammembers"
-import { useOrganization } from "../../../hooks/useOrganization"
 import { useWorkItems } from "../../../hooks/useWorkItems"
 import { TypeReport } from "../../../types/report"
 import { useUserStoryReport } from "../hooks/useUserStoryReport"
@@ -23,9 +22,6 @@ export function Container({
   iteration,
   typeReport,
 }: ContainerProps) {
-  const { organization } = useOrganization()
-
-  console.info({ organization })
   const [teamMembers, setTeamMembers] = React.useState<TeamMember[]>([])
   const [teams, setTeams] = React.useState<
     {
@@ -36,14 +32,13 @@ export function Container({
   React.useEffect(() => {
     const load = async () => {
       const { teams } = await getIterationCapacities({
-        organization,
         projectId,
         iterationId: iteration.id,
       })
 
       const teamMembers = await Promise.all(
         teams.map(({ teamId }) =>
-          getTeamMembers({ organization, iteration, projectId, teamId })
+          getTeamMembers({ iteration, projectId, teamId })
         )
       ).then(res => res.flat())
 
@@ -55,17 +50,12 @@ export function Container({
   }, [iteration, projectId])
 
   const { workItems, completedStates } = useWorkItems({
-    organization,
     projectId,
     teams,
     iterationPath: iteration.path,
   })
 
-  const { userStories } = useUserStoryReport({
-    organization,
-    workItems,
-    completedStates,
-  })
+  const { userStories } = useUserStoryReport({ workItems, completedStates })
 
   return (
     <div>

@@ -1,7 +1,5 @@
 import React, { useCallback, useState } from "react"
 
-import { useParams } from "react-router"
-
 import { TeamProjectReference } from "azure-devops-extension-api/Core"
 import { TeamSettingsIteration } from "azure-devops-extension-api/Work"
 import { Card } from "azure-devops-ui/Card"

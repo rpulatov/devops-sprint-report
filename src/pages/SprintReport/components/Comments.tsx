@@ -12,7 +12,7 @@ function formatter(text: string) {
 }
 
 function filterComment(text: string) {
-  return text.startsWith("[")
+  return text.search(/\[[A-Za-z]*\]/i) !== -1
 }
 
 type CommentsProps = {
